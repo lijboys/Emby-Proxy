@@ -1,4 +1,4 @@
-# 🎬 Emby-Cloudflare-Proxy (Universal & Cached)
+# 🎬 Emby-Cloudflare-Proxy
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/your-username/Emby-Cloudflare-Proxy?style=social)](https://github.com/your-username/Emby-Cloudflare-Proxy)
 
