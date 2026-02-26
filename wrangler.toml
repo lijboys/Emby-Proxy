@@ -1,0 +1,9 @@
+# 这个文件告诉 Cloudflare 你的项目基础信息
+name = "emby-proxy-worker"
+main = "worker.js"
+compatibility_date = "2024-02-26"
+
+# [可选] 如果你绑定了 KV 数据库，需要在这里声明
+# [[kv_namespaces]]
+# binding = "EMBY_KV"
+# id = "你的 KV 空间 ID (在 CF 控制台查看)"
