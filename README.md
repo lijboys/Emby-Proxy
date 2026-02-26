@@ -1,4 +1,4 @@
-# 🎬 Emby-Cloudflare-Proxy 
+# 🎬 Emby-Cloudflare-Proxy
 基于 Cloudflare Workers 打造的 Emby/Jellyfin 轻量级智能反向代理工具
 
 ## ✨ 核心纯净特性
@@ -15,27 +15,53 @@
 - **Web 控制台**：保留基于 Cloudflare KV 的轻量化后台面板，支持在线修改配置
 - **强迫症白名单**：支持黑/白名单双模式，输入框兼容 `# 中文备注`、空行排版，自动剥离粘贴的完整 `https://` 链接与端口，精准提取纯净域名
 
-## 🚀 CF网页部署
-### 步骤 1：创建 KV 数据库
+## 🚀 部署方式
+### 方式一：GitHub Actions 自动化部署 (推荐)
+通过 GitHub Actions 配置一次环境变量，后续修改代码可全自动推送到 Cloudflare 边缘节点。
+
+#### 步骤 1：准备 KV 数据库
+1. 登录 Cloudflare，进入【Workers 和 Pages】→ 【KV】
+2. 创建新命名空间（例如：`emby_kv`），复制右侧的**命名空间 ID**
+
+#### 步骤 2：Fork 本仓库并配置 Secrets
+1. Fork 本项目到你的 GitHub 账户
+2. 进入仓库的 `Settings -> Secrets and variables -> Actions`
+3. 点击 `New repository secret`，添加以下 3 个必需变量：
+
+| Secret 变量名 | 填写说明 | 获取位置 |
+|--------------|----------|----------|
+| `CF_ACCOUNT_ID` | 你的 Cloudflare 账户 ID | CF 网页右下角的“帐户 ID” |
+| `CF_API_TOKEN` | 具备编辑 Worker 权限的令牌 | CF 右上角头像 → 我的个人资料 → API 令牌 |
+| `CF_KV_ID` | 步骤 1 中创建的 KV 空间 ID | CF 控制台 → KV → 对应命名空间右侧的 ID |
+
+#### 步骤 3：触发部署
+配置完成后，在仓库中对任意文件（如修改 README）提交一次变更（Commit），即可触发部署。等待 Actions 运行状态变绿，即部署成功。
+
+---
+
+### 方式二：CF 网页手动部署
+若不熟悉 GitHub，可直接在 Cloudflare 网页端手动创建部署。
+
+#### 步骤 1：创建 KV 数据库
 1. 进入 Cloudflare 左侧菜单 → 【Workers 和 Pages】→ 【KV】
-2. 点击【创建命名空间】，自定义名称（例如：emby_lite_kv）
+2. 点击【创建命名空间】，自定义名称（例如：`emby_lite_kv`）
 
-### 步骤 2：部署 Worker 代码
+#### 步骤 2：部署 Worker 代码
 1. 进入【Workers 和 Pages】→ 【概述】→ 【创建 Worker】，命名并完成初始部署
-2. 点击【编辑代码】，粘贴本仓库 [_worker.js](https://raw.githubusercontent.com/lijboys/Emby-Proxy/refs/heads/main/_worker.js) 完整代码覆盖原有内容，重新部署
+2. 点击【编辑代码】，粘贴本仓库 `_worker.js` 完整代码覆盖原有内容，重新部署
 
-### 步骤 3：绑定环境变量 (关键)
-#### 绑定 KV 命名空间
+#### 步骤 3：绑定环境变量 (关键)
+##### 绑定 KV 命名空间
 - 进入 Worker 【设置】→ 【绑定】→ 【KV 命名空间绑定】
 - 变量名称：**必须填写 `EMBY_KV`**
 - 命名空间：选择步骤 1 创建的数据库
 
-#### 设置后台路径
+##### 设置后台路径
 - 进入 Worker 【设置】→ 【变量和机密】→ 添加变量
 - 变量名：`admin`
 - 值：自定义后台路径（如 `/lite-admin`），不设置则默认 `/emby-admin`
 
-### 步骤 4：绑定自定义域名
+#### 步骤 4：绑定自定义域名
 在 Worker 【设置】→ 【触发器】→ 【自定义域】中，绑定托管在 Cloudflare 的域名即可。
 
 > ⚠️ 初始默认密码：`admin`（登录后台后请立即修改）
