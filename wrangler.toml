@@ -1,17 +1,12 @@
-# 项目名称 (在 CF 后台显示的名字)
-name = "embyproxy"
-
-# 入口文件 (对应你仓库里的代码文件)
+name = "emby-proxy-worker"
 main = "_worker.js"
-
-# 兼容性日期 (保持默认即可)
 compatibility_date = "2024-02-26"
 
 # ==========================================
-# 🗄️ KV 数据库绑定 (必须配置，否则后台面板无法工作)
+# 🗄️ KV 数据库开关 (默认开启)
+# 注意: 这里的 id 只是个占位符，请勿修改！
+# 真实的 ID 会由 GitHub Actions 部署时自动注入
 # ==========================================
 [[kv_namespaces]]
-# 这里的 binding 必须是 EMBY_KV，代码里写死了认这个名字
 binding = "EMBY_KV"
-# 👇 请将下面的 ID 替换为你自己的 KV 空间 ID
-id = "请替换为你的_KV_ID"
+id = "YOUR_KV_ID"
