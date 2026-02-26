@@ -23,7 +23,7 @@
 
 手动部署 CF Worker：
    - 在 CF Worker 控制台中创建一个新的 Worker。
-   - 将 [worker.js](https://github.com/lijboys/EmbyProxy/blob/main/_worker.js) 的内容粘贴到 Worker 编辑器中。
+   - 将 [worker.js](https://github.com/lijboys/Emby-Proxy/blob/main/_worker.js) 的内容粘贴到 Worker 编辑器中。
    - 点击 `保存`即可。
 
 ### 方式 B：Cloudflare Pages 部署 (推荐，更稳定)
