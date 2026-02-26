@@ -1,16 +1,18 @@
 /**
- * 🎬 Emby-Cloudflare-Proxy (v8.03 极简纯净版)
- * @description  动态寻址 | 智能缓存 | 端口找回 | 容错白名单
+ * Emby-Cloudflare-Proxy
+ * @description 核心代理转发 | 智能分级缓存 | 端口防呆找回 | 容错白名单
  */
 
 // ====================================================
-// 默认配置 (极简版)
+// 默认配置
+const DEFAULT_HTML = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>🚀 使用指南</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f5f7; color: #333; padding: 20px; } .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); } h1 { color: #0066ff; font-size: 28px; margin-bottom: 30px; } h2 { color: #0066ff; font-size: 22px; margin-top: 30px; margin-bottom: 15px; } .code-block { background: #fff5f5; border-left: 4px solid #0066ff; padding: 12px 15px; margin: 15px 0; border-radius: 4px; font-family: monospace; color: #ff6b81; font-size: 15px; overflow-x: auto; white-space: nowrap; } .warning-box { background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 20px; margin-top: 40px; } .warning-box p { color: #c53030; margin: 0; font-weight: bold; line-height: 1.8; }</style></head><body><div class="container"><h1>🚀 使用指南</h1><h2>通用格式</h2><div class="code-block">https://{{HOST}}/你的域名:端口</div><div class="code-block">https://{{HOST}}/http://你的域名:端口</div><div class="code-block">https://{{HOST}}/https://你的域名:端口</div><h2>HTTP 示例</h2><div class="code-block">https://{{HOST}}/http://emby.com</div><h2>HTTPS 示例</h2><div class="code-block">https://{{HOST}}/https://emby.com</div><div class="warning-box"><p>⚠️ 严正警告：务必手动测试是否可用。禁止恶意占用资源！</p></div></div></body></html>`;
+
 const DEFAULT_CONFIG = {
   admin_password: 'admin', 
   enable_whitelist: false, 
   blacklist: [],           
   whitelist: [],
-  custom_html: `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>🚀 极简代理服务</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f5f7; color: #333; padding: 20px; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; } .container { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; max-width: 500px; } h1 { color: #0066ff; margin-bottom: 20px; } p { color: #666; line-height: 1.6; } .host { font-family: monospace; background: #f0f4f8; padding: 8px 12px; border-radius: 6px; color: #d63384; display: inline-block; margin-top: 15px; }</style></head><body><div class="container"><h1>🎬 Proxy Active</h1><p>代理节点运行正常。<br>请在客户端中按规范拼接目标服务器地址使用。</p><div class="host">https://{{HOST}}/目标地址:端口</div></div></body></html>`
+  custom_html: DEFAULT_HTML
 };
 // ====================================================
 
@@ -43,9 +45,9 @@ async function handleRequest(request, env, ctx) {
   const now = Date.now();
   if (!configCache || now - lastCacheTime > 60000) {
     let kvConfig = null;
-    if (env.kv) {
+    if (env.EMBY_KV) {
       try {
-        const kvData = await env.kv.get('CONFIG');
+        const kvData = await env.EMBY_KV.get('CONFIG');
         if (kvData) kvConfig = JSON.parse(kvData);
       } catch (e) {}
     }
@@ -217,11 +219,11 @@ async function handleRequest(request, env, ctx) {
 // 后台路由与 API 处理函数 (精简版)
 // ==========================================
 async function handleAdminRoute(request, env, url, adminRoute) {
-  if (!env.kv) return new Response('未绑定 KV 存储空间，请在 CF 后台绑定小写的 kv 变量。', { status: 500, headers: {'Content-Type': 'text/plain;charset=utf-8'} });
+  if (!env.EMBY_KV) return new Response('未绑定 KV 存储空间，请在 GitHub Secrets 中配置 CF_KV_ID。', { status: 500, headers: {'Content-Type': 'text/plain;charset=utf-8'} });
 
   let kvConfig = null;
   try {
-    const kvData = await env.kv.get('CONFIG');
+    const kvData = await env.EMBY_KV.get('CONFIG');
     if (kvData) kvConfig = JSON.parse(kvData);
   } catch (e) {}
   const currentConfig = { ...DEFAULT_CONFIG, ...(kvConfig || {}) };
@@ -246,7 +248,7 @@ async function handleAdminRoute(request, env, url, adminRoute) {
 
   if (url.pathname === `${adminRoute}/api/config` && request.method === 'POST') {
     const newConfig = await request.json();
-    await env.kv.put('CONFIG', JSON.stringify({ ...currentConfig, ...newConfig }));
+    await env.EMBY_KV.put('CONFIG', JSON.stringify({ ...currentConfig, ...newConfig }));
     configCache = null; 
     return new Response(JSON.stringify({ success: true }));
   }
@@ -310,7 +312,7 @@ const ADMIN_PANEL_HTML = (route) => `
       <div>
         <h1 class="text-4xl font-extrabold text-blue-600 tracking-tight">🎬 Proxy Panel</h1>
         <p class="text-slate-500 mt-2 flex items-center gap-2">
-          <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md font-semibold">v8.03 极简纯净版</span>
+          <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md font-semibold">Lite 极简纯净版</span>
           <span>轻量 · 极速 · 安全</span>
         </p>
       </div>
