@@ -1,346 +1,39 @@
 /**
- * 🎬 Emby-Cloudflare-Proxy (v1.5.0-slim)
- * @description 美观版：轻量管理后台、TG推送、黑白名单
+ * 🎬 Emby-Cloudflare-Proxy 
+ * @description 巨幕版动态仪表盘 | 毫秒级无感拦截结界 | 智能流量防封与监控喵~
  */
 
 // ==========================================
-// 🎨 模块 1：前端模板库 (HTML_TEMPLATES)
+// 🎨 魔法卷轴 1：前端模板百宝箱 (HTML_TEMPLATES)
 // ==========================================
 const HTML_TEMPLATES = {
-  // 引导页（与原版相同）
-  guide: (host) => `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🚀 使用指南</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f5f7; color: #333; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    h1, h2 { color: #0066ff; }
-    .code-block { background: #fdf6f7; border-left: 4px solid #0066ff; padding: 12px; margin: 15px 0; border-radius: 4px; font-family: monospace; color: #d63384; font-size: 15px; overflow-x: auto; white-space: nowrap; }
-    .warning-box { background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 20px; margin-top: 40px; color: #c53030; font-weight: bold; line-height: 1.8; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🚀 使用指南</h1>
-    <h2>通用格式</h2>
-    <div class="code-block">https://${host}/你的域名:端口</div>
-    <div class="code-block">https://${host}/http://你的域名:端口</div>
-    <div class="code-block">https://${host}/https://你的域名:端口</div>
-    <h2>HTTP 示例</h2>
-    <div class="code-block">https://${host}/http://emby.com</div>
-    <h2>HTTPS 示例</h2>
-    <div class="code-block">https://${host}/https://emby.com</div>
-    <div class="warning-box">
-      <p>⚠️ 严正警告：务必手动测试是否可用。禁止恶意占用资源！</p>
-    </div>
-  </div>
-</body>
-</html>
-`,
-
-  // 用量报告卡片页
-  logViewer: (data) => `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📊 每日用量报表</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; }
-  </style>
-</head>
-<body class="bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center min-h-screen p-4">
-  <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-white/30">
-    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white text-center">
-      <div class="text-6xl mb-4">${data.status === '🚨' ? '🚨' : '📊'}</div>
-      <h2 class="text-3xl font-bold tracking-wide">每日用量报表</h2>
-      <p class="text-blue-200 text-sm mt-2 opacity-90">${data.time}</p>
-    </div>
-    <div class="p-8 space-y-6">
-      <div class="flex justify-between items-center border-b border-gray-100 pb-4">
-        <span class="text-gray-500 font-medium">今日累计请求</span>
-        <span class="font-mono font-bold text-2xl text-gray-800">${data.requests.toLocaleString()} <span class="text-sm text-gray-400 font-normal">/ 100k</span></span>
-      </div>
-      <div>
-        <div class="flex justify-between text-sm text-gray-600 mb-2">
-          <span>已用额度</span>
-          <span class="font-semibold">${data.percent}%</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-          <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-3 rounded-full transition-all duration-1000" style="width: ${Math.min(data.percent, 100)}%"></div>
-        </div>
-      </div>
-      <div class="bg-blue-50/50 rounded-xl p-4 text-center">
-        <p class="text-blue-800 text-sm">
-          🎯 剩余额度 <span class="font-bold text-lg">${(100000 - data.requests).toLocaleString()}</span> 次调用
-        </p>
-      </div>
-    </div>
-  </div>
-</body>
-</html>
-`,
-
-  // 登录页
-  login: (route) => `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>控制台登录</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center h-screen">
-  <div class="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl w-96 p-8 border border-white/30">
-    <h2 class="text-3xl font-extrabold text-center text-blue-600 mb-8">🎬 代理控制台</h2>
-    <div class="space-y-6">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">管理员密码</label>
-        <input type="password" id="pwd" class="w-full px-4 py-3 rounded-xl bg-white/50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="输入密码..." @keyup.enter="login">
-      </div>
-      <button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all active:scale-[0.98]">登 录</button>
-    </div>
-    <p id="err" class="text-red-500 text-sm mt-4 text-center hidden bg-red-50 py-2 rounded-lg">🔒 密码错误，请重试</p>
-  </div>
-  <script>
-    async function login() {
-      const p = document.getElementById('pwd').value;
-      const res = await fetch('${route}/api/login', { method: 'POST', body: JSON.stringify({password: p}) });
-      if(res.ok) location.reload(); 
-      else document.getElementById('err').classList.remove('hidden');
-    }
-  </script>
-</body>
-</html>
-`,
-
-  // 管理后台主界面
-  admin: (route) => `
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>反代控制台 · 精简版</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-    body { font-family: 'Inter', sans-serif; background: #f8fafc; }
-    .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
-  </style>
-</head>
-<body class="antialiased">
-  <div id="app" class="max-w-6xl mx-auto py-10 px-4 sm:px-6">
-    <!-- 头部 -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-blue-600">🎬 Proxy Panel</h1>
-        <p class="text-slate-500 mt-1 text-sm">轻量管理 · 黑白名单 · 用量报告</p>
-      </div>
-      <button @click="save" class="mt-4 sm:mt-0 bg-blue-600 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-blue-700 shadow-lg transition-all flex items-center gap-2">
-        <svg v-if="saving" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-        <span v-if="saving">保存中...</span>
-        <span v-else>💾 保存设置</span>
-      </button>
-    </div>
-
-    <!-- 用量卡片 -->
-    <div class="glass-card rounded-2xl shadow-xl p-6 mb-8">
-      <h3 class="text-slate-600 font-medium mb-4 flex items-center gap-2">📊 今日用量 (UTC)</h3>
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex-1">
-          <div class="text-4xl font-bold text-slate-800">
-            <span v-if="loadingStats" class="animate-pulse text-slate-400">查询中...</span>
-            <span v-else-if="stats === -1" class="text-xl text-slate-500">待配置 Token</span>
-            <span v-else>{{ stats.toLocaleString() }} <span class="text-lg font-normal text-slate-400">/ 10万</span></span>
-          </div>
-        </div>
-        <div class="w-full md:w-64" v-if="stats !== -1 && !loadingStats">
-          <div class="flex justify-between text-sm text-slate-600 mb-1">
-            <span>已用 {{ ((stats/100000)*100).toFixed(1) }}%</span>
-            <span>剩余 {{ (100000 - stats).toLocaleString() }}</span>
-          </div>
-          <div class="w-full bg-slate-200 rounded-full h-2.5">
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-2.5 rounded-full transition-all duration-700" :style="{ width: Math.min((stats / 100000) * 100, 100) + '%' }"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 配置表单：两列布局 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- 核心配置 -->
-      <div class="glass-card rounded-2xl shadow-sm p-6 space-y-5">
-        <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">⚙️ 核心配置</h2>
-        <div>
-          <label class="block text-sm font-medium text-slate-600 mb-1">后台密码</label>
-          <input v-model="c.admin_password" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-600 mb-1">CF Account ID</label>
-          <input v-model="c.cf_account_id" type="text" class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-600 mb-1">CF API Token</label>
-          <input v-model="c.cf_api_token" type="password" class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm">
-        </div>
-        <div class="pt-2 border-t border-slate-100">
-          <h3 class="font-medium text-slate-700 mb-3">📱 Telegram 用量推送</h3>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs text-slate-500 mb-1">Bot Token</label>
-              <input v-model="c.tg_token" type="password" class="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm">
-            </div>
-            <div>
-              <label class="block text-xs text-slate-500 mb-1">Chat ID</label>
-              <input v-model="c.tg_chat_id" type="text" class="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm">
-            </div>
-          </div>
-          <div class="mt-2">
-            <label class="block text-xs text-slate-500 mb-1">通知标题</label>
-            <input v-model="c.tg_title" type="text" class="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm">
-          </div>
-        </div>
-      </div>
-
-      <!-- 安全管控 -->
-      <div class="glass-card rounded-2xl shadow-sm p-6 space-y-5">
-        <h2 class="text-lg font-semibold text-slate-800 flex items-center gap-2">🛡️ 安全管控</h2>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" v-model="c.enable_whitelist" class="w-4 h-4 text-blue-600 rounded border-slate-300">
-          <label class="text-sm font-medium text-slate-700">强制白名单模式</label>
-        </div>
-        <div class="grid gap-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">黑名单</label>
-            <textarea v-model="blacklistText" rows="4" class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 font-mono text-sm" placeholder="每行一个IP或域名"></textarea>
-          </div>
-          <div v-if="c.enable_whitelist">
-            <label class="block text-sm font-medium text-slate-600 mb-1">白名单</label>
-            <textarea v-model="whitelistText" rows="4" class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 font-mono text-sm" placeholder="每行一个IP或域名"></textarea>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">允许的端口</label>
-            <input v-model="c.allowed_ports" placeholder="80,443,8096,8920" class="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-600 mb-1">允许的域名</label>
-            <input v-model="c.allowed_domains" placeholder="emby.example.com" class="w-full px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm">
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <input type="checkbox" v-model="c.block_sensitive_paths" class="w-4 h-4 text-blue-600 rounded border-slate-300">
-          <label class="text-sm font-medium text-slate-700">阻止敏感路径扫描</label>
-        </div>
-      </div>
-    </div>
-
-    <!-- 自定义引导页 HTML（可选） -->
-    <div class="glass-card rounded-2xl shadow-sm p-6 mt-6">
-      <h2 class="text-lg font-semibold text-slate-800 mb-3">🌐 自定义引导页</h2>
-      <textarea v-model="c.custom_html" rows="6" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 font-mono text-sm"></textarea>
-      <p class="text-xs text-slate-400 mt-2">支持 {{HOST}} 变量自动替换为当前域名</p>
-    </div>
-  </div>
-
-  <script>
-    const { createApp, ref, computed, onMounted } = Vue;
-    createApp({
-      setup() {
-        const c = ref({
-          admin_password: '',
-          tg_token: '', tg_chat_id: '', tg_title: '#🎬Emby代理',
-          cf_account_id: '', cf_api_token: '',
-          enable_whitelist: false, blacklist: [], whitelist: [],
-          custom_html: '',
-          allowed_ports: '80,443,8096,8920',
-          allowed_domains: '',
-          block_sensitive_paths: true
-        });
-        const saving = ref(false);
-        const stats = ref(-1);
-        const loadingStats = ref(true);
-        const route = '${route}';
-
-        const blacklistText = computed({
-          get: () => (c.value.blacklist || []).join('\\n'),
-          set: (v) => c.value.blacklist = v.split('\\n').filter(s => s.trim() !== '')
-        });
-        const whitelistText = computed({
-          get: () => (c.value.whitelist || []).join('\\n'),
-          set: (v) => c.value.whitelist = v.split('\\n').filter(s => s.trim() !== '')
-        });
-
-        const loadStats = async () => {
-          loadingStats.value = true;
-          try {
-            const res = await fetch(route + '/api/stats');
-            if (res.ok) {
-              const data = await res.json();
-              stats.value = data.usage;
-            }
-          } catch (e) {}
-          loadingStats.value = false;
-        };
-
-        onMounted(async () => {
-          try {
-            const res = await fetch(route + '/api/config');
-            if (res.ok) {
-              const data = await res.json();
-              c.value = { ...c.value, ...data };
-            }
-          } catch (e) {}
-          await loadStats();
-        });
-
-        const save = async () => {
-          saving.value = true;
-          await fetch(route + '/api/config', { method: 'POST', body: JSON.stringify(c.value) });
-          setTimeout(() => { saving.value = false; alert('✅ 保存成功'); }, 500);
-        };
-
-        return { c, saving, blacklistText, whitelistText, stats, loadingStats, route, save };
-      }
-    }).mount('#app');
-  </script>
-</body>
-</html>
-`
+  // 引导页 (敲好看的巨幕动态极速版 ⭐)
+  guide: (h,s=-1)=>{const p=s===-1?0:Math.min(s/100000*100,100).toFixed(2),nt=s===-1,sv=nt?'--':s.toLocaleString(),pd=nt?'--':p,pc=nt?'text-slate-500':p<50?'text-emerald-400':p<80?'text-amber-400':'text-rose-400',c=[{bg:'bg-slate-50',bd:'border-slate-200',txt:'text-slate-700',cd:`https://${h}/你的域名:端口`},{bg:'bg-slate-50',bd:'border-slate-200',txt:'text-slate-700',cd:`https://${h}/http://你的域名:端口`},{bg:'bg-slate-50',bd:'border-slate-200',txt:'text-slate-700',cd:`https://${h}/https://你的域名:端口`},{bg:'bg-blue-50/60',bd:'border-blue-100',txt:'text-blue-800',cd:`https://${h}/http://emby.com:80`},{bg:'bg-emerald-50/60',bd:'border-emerald-100',txt:'text-emerald-800',cd:`https://${h}/https://emby.com:443`}];return`<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>🚀 Emby Proxy Gateway</title><script src="https://cdn.tailwindcss.com"></script><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><style>body{font-family:'Inter',-apple-system,sans-serif;background:#f8fafc;}</style></head><body class="min-h-screen antialiased flex items-center justify-center p-4 md:p-8 lg:p-12"><div class="max-w-7xl w-full"><div class="bg-white rounded-[32px] shadow-2xl overflow-hidden border border-slate-200/50"><div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"></div><div class="grid grid-cols-1 lg:grid-cols-12"><div class="lg:col-span-7 p-6 md:p-8 xl:p-16 bg-white"><div class="flex items-center gap-4 mb-8 md:mb-10"><div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md"><span class="text-xl md:text-2xl">🚀</span></div><div><div class="flex items-center gap-2"><span class="text-xs font-bold text-blue-600 uppercase tracking-[0.2em]">Emby Proxy</span><span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">Gateway</span></div><h1 class="text-xl md:text-2xl lg:text-3xl font-bold text-slate-800 mt-1">使用指南</h1></div></div><div class="space-y-6 md:space-y-8"><div class="space-y-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-sm">1</div><h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider">通用格式</h2></div><div class="space-y-3 pl-11">${c.slice(0,3).map(b=>`<div class="${b.bg} ${b.bd} p-4 rounded-xl font-mono text-sm md:text-base ${b.txt} break-all">${b.cd}</div>`).join('')}</div></div><div class="space-y-4"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-sm">2</div><h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider">http、https示例</h2></div><div class="space-y-3 pl-11">${c.slice(3).map(b=>`<div class="${b.bg} ${b.bd} p-4 rounded-xl font-mono text-sm md:text-base ${b.txt} break-all">${b.cd}</div>`).join('')}</div></div></div><div class="mt-8 md:mt-12 p-4 md:p-6 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 flex gap-3 md:gap-4 items-start"><div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0 mt-1"><span class="text-xl md:text-2xl">⚠️</span></div><div class="pt-1"><h3 class="font-bold text-amber-900 mb-1 text-sm md:text-base">系统风控预警</h3><p class="text-amber-800/70 text-xs md:text-sm leading-relaxed">务必手动测试是否可用。禁止恶意占用资源！</p></div></div></div><div class="lg:col-span-5 bg-slate-900 p-6 md:p-8 xl:p-12 relative overflow-hidden flex flex-col justify-center"><div class="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-blue-600/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none"></div><div class="relative z-10"><div class="flex items-center justify-between mb-8 md:mb-12"><div class="flex items-center gap-3"><div class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span></div><span class="text-slate-300 text-xs md:text-sm font-medium tracking-wide">System Online</span></div><div class="bg-white/10 px-2 md:px-3 py-1.5 rounded-full border border-white/20"><span class="text-[8px] md:text-[10px] font-bold text-slate-300 uppercase tracking-wider">CF Workers</span></div></div><div class="mb-6 md:mb-10"><h3 class="text-white font-bold text-xl md:text-2xl lg:text-3xl mb-2 tracking-tight">请求额度统计</h3><p class="text-slate-400 text-xs md:text-sm">Cloudflare GraphQL API 实时监控</p></div><div class="bg-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 mb-6 md:mb-8 border border-white/20 shadow-inner"><div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6"><div><p class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">已消耗用量</p><div class="flex items-baseline gap-2 flex-wrap"><span class="text-4xl md:text-5xl font-black text-white tracking-tight">${sv}</span><span class="text-slate-500 font-medium text-sm md:text-base">/ 10k</span></div></div><div class="text-right"><p class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">请求量</p><span class="text-xl md:text-2xl font-bold ${pc}">${pd}%</span></div></div><div class="relative h-2 md:h-3 bg-slate-700/50 rounded-full overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-amber-500/10 to-rose-500/10"></div><div class="absolute top-0 left-0 bottom-0 rounded-full transition-all duration-1000 ease-out bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-500" style="width:${nt?'0%':p+'%'}"></div></div><div class="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-white/10">${nt?`<div class="flex items-center gap-3 text-slate-400"><svg class="w-4 h-4 md:w-5 md:h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><span class="text-xs md:text-sm">未配置 Cloudflare Token，无法获取节点数据</span></div>`:`<div class="flex items-center gap-3 ${p<80?'text-emerald-400':'text-amber-400'}"><svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="text-xs md:text-sm font-medium">${p<80?'系统运行状态良好':'接近负载上限，请关注'}</span></div>`}</div></div><div class="flex items-center justify-between text-slate-500 text-xs"><span>Last updated</span><span class="text-slate-400 font-mono">Just now</span></div></div></div></div></div></div></body></html>`;},
+      
+  // 管理后台登录页 (小锁头防身用 🔒)
+  login: (route) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>控制台登录</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-gray-50 flex items-center justify-center h-screen"><div class="bg-white p-10 rounded-2xl shadow-xl w-96 border border-gray-100"><h2 class="text-3xl font-extrabold text-center text-blue-600 mb-8 tracking-tight">🎬 代理控制台</h2><div class="space-y-6"><div><label class="block text-sm font-medium text-gray-700 mb-2">管理员密码</label><input type="password" id="pwd" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="输入密码..." @keyup.enter="login"></div><button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all active:scale-[0.98]">登 录</button></div><p id="err" class="text-red-500 text-sm mt-4 text-center hidden bg-red-50 py-2 rounded-lg">🔒 密码错误，请重试</p></div><script>async function login(){const p=document.getElementById('pwd').value;const res=await fetch('${route}/api/login',{method:'POST',body:JSON.stringify({password:p})});if(res.ok)location.reload();else document.getElementById('err').classList.remove('hidden');}</script></body></html>`,
+      
+  // 管理后台主界面 (这里面超多可爱的按钮和设置项哦 ✨)
+  admin: (route) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>反代控制台</title><script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script><style>::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#94a3b8}.fade-enter-active,.fade-leave-active{transition:opacity .3s ease,transform .3s ease}.fade-enter-from,.fade-leave-to{opacity:0;transform:translateY(-10px)}</style></head><body class="bg-[#F8FAFC] text-slate-800 antialiased font-sans"><div id="app" class="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-slate-200 pb-6 mb-8 gap-4"><div><h1 class="text-4xl font-extrabold text-blue-600 tracking-tight">🎬 Proxy Panel</h1><p class="text-slate-500 mt-2 flex items-center gap-2"><span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md font-semibold">v9.7.0 旗舰提速版</span><span>全隐蔽防扫描 · 毫秒级无感拦截 · 智能监控防护</span></p></div><div class="flex gap-3"><button @click="test" class="bg-purple-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-purple-700 transition-all shadow-sm hover:shadow-md">📢 测试系统报表</button><button @click="save" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all active:scale-95 flex items-center gap-2"><svg v-if="saving" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span v-if="saving">保存中...</span><span v-else>💾 保存所有设置</span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden"><h3 class="text-blue-100 font-medium mb-2 flex items-center gap-2">📊 今日用量 (UTC)</h3><div class="text-4xl font-extrabold mt-4"><span v-if="loadingStats" class="animate-pulse">数据同步中...</span><span v-else-if="stats === -1" class="text-xl">待配置系统 Token</span><span v-else>{{ stats.toLocaleString() }} <span class="text-lg font-normal text-blue-200">/ 10万</span></span></div><div v-if="stats !== -1 && !loadingStats" class="mt-5 bg-black/20 rounded-full h-2 w-full overflow-hidden"><div class="bg-white h-full rounded-full transition-all duration-1000" :style="{ width: Math.min((stats / 100000) * 100, 100) + '%' }"></div></div></div><div class="col-span-1 md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center"><div class="w-full"><div class="flex items-center justify-between mb-4"><h3 class="font-bold text-slate-800 text-lg mb-1 flex items-center gap-2"><span class="text-xl">🔐</span> 当前管理路径</h3><span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-lg font-mono text-sm border border-slate-200">${route}</span></div><p class="text-slate-500 text-sm mb-4">如需修改管理入口，请在 Cloudflare Workers 的变量管理中调整 <b>admin</b> 的值。</p><div class="bg-blue-50/50 rounded-xl p-4 border border-blue-100"><p class="text-blue-800 text-sm flex items-start gap-2"><span class="text-base mt-0.5">⏰</span><span><b>自动巡航与报表启用指南：</b>请在 CF 触发器中添加 Cron 表达式 <code class="font-bold bg-white px-1.5 rounded text-blue-600 border border-blue-200">0 12 * * *</code> (对应北京时间 20:00 准时播报)。</span></p></div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6"><div><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">⚙️</div>系统核心认证与审计</h2><label class="block text-sm font-semibold text-slate-700 mb-1.5">🔑 后台访问密码</label><input v-model="c.admin_password" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"></div><div class="pt-4 border-t border-slate-100"></div><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">☁️ CF Account ID (用于数据底座)</label><input v-model="c.cf_account_id" type="text" placeholder="用于拉取全局额度统计数据..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500"></div><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">🔑 CF API Token (只读分析权限)</label><input v-model="c.cf_api_token" type="password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500"></div></div><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6"><div><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-sky-500 text-xl">📱</div>Telegram 监控报表通道</h2><label class="block text-sm font-semibold text-slate-700 mb-1.5">🏷️ 播报系统抬头 (Title)</label><input v-model="c.tg_title" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-sky-500"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-slate-500 mb-1">Bot Token 密钥</label><input v-model="c.tg_token" type="password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-sky-500"></div><div><label class="block text-xs font-bold text-slate-500 mb-1">目标 Chat ID</label><input v-model="c.tg_chat_id" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-sky-500"></div></div></div></div><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8"><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 text-xl">🌐</div>底层伪装与前台静态化托管</h2><textarea v-model="c.custom_html" rows="8" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 font-mono text-[13px] focus:ring-2 focus:ring-purple-400" placeholder="⚠️ 注意：留空此框，系统将自动挂载并渲染带动态进度条的高级仪表盘大屏！&#10;仅当您需要接管前台，使用自定义静态 HTML 作为伪装页时，才在此处填入代码。"></textarea></div><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 text-xl">🛡️</div>零信任安全与网络微隔离</h2><label class="flex items-center space-x-3 cursor-pointer p-2.5 pr-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all"><div class="relative flex items-center"><input type="checkbox" v-model="c.enable_whitelist" class="peer sr-only"><div class="w-11 h-6 bg-slate-200 peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div></div><span class="font-semibold text-sm text-slate-700">启用强制白名单模式</span></label></div><div class="grid gap-6 transition-all duration-500 ease-in-out" :class="c.enable_whitelist ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:max-w-2xl'"><div><label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2"><span class="w-2 h-2 rounded-full bg-red-400"></span>全局黑名单 (实时阻断)</label><textarea v-model="blacklistText" rows="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-red-400" placeholder="# 在行首加 # 可以写备注&#10;11.22.33.44&#10;bad-emby.com"></textarea></div><transition name="fade"><div v-if="c.enable_whitelist"><label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>核心白名单 (信任放行)</label><textarea v-model="whitelistText" rows="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-emerald-400" placeholder="# 我的核心服节点&#10;emby.example.com&#10;&#10;# 系统内置智能正则，可直接贴全链&#10;https://demo.emby.media:8443"></textarea></div></transition></div><div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">🔌 应用层端口微隔离 (逗号分隔)</label><input v-model="c.allowed_ports" type="text" placeholder="80,443,8096,8920,8443,2096" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">🌍 信任目标基准域 (留空则全放行)</label><input v-model="c.allowed_domains" type="text" placeholder="emby.example.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400"></div><div class="flex items-center md:col-span-2"><label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" v-model="c.block_sensitive_paths" class="w-4 h-4 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-500"><span class="text-sm font-medium text-slate-700">启用敏感路径隐身防御 (封堵 .env, admin, php 等恶意扫描)</span></label></div></div></div></div><script>const {createApp,ref,computed,onMounted}=Vue;createApp({setup(){const c=ref({admin_password:'',cf_account_id:'',cf_api_token:'',tg_token:'',tg_chat_id:'',tg_title:'',custom_html:'',enable_whitelist:false,blacklist:[],whitelist:[],allowed_ports:'80,443,8096,8920,8443,2096',allowed_domains:'',block_sensitive_paths:true});const saving=ref(false);const stats=ref(-1);const loadingStats=ref(true);const route='${route}';const blacklistText=computed({get:()=>(c.value.blacklist||[]).join('\\n'),set:(v)=>c.value.blacklist=v.split('\\n')});const whitelistText=computed({get:()=>(c.value.whitelist||[]).join('\\n'),set:(v)=>c.value.whitelist=v.split('\\n')});const loadStats=async()=>{loadingStats.value=true;try{const res=await fetch(route+'/api/stats');if(res.ok){const data=await res.json();stats.value=data.usage;}}catch(e){}loadingStats.value=false;};onMounted(async()=>{const res=await fetch(route+'/api/config');if(res.ok)c.value={...c.value,...await res.json()};await loadStats();});const save=async()=>{saving.value=true;await fetch(route+'/api/config',{method:'POST',body:JSON.stringify(c.value)});setTimeout(()=>{saving.value=false;alert('✨ 系统配置热重载成功！');loadStats();},500);};const test=async()=>{await fetch(route+'/api/test-notify',{method:'POST'});alert('✅ 测试调度已触发，请检查您的 TG 接收终端！');};return{c,saving,blacklistText,whitelistText,save,test,stats,loadingStats,route}}}).mount('#app');</script></body></html>`
 };
 
+
 // ==========================================
-// ⚙️ 模块 2：系统配置与存储 (ConfigManager)
+// ⚙️ 魔法阵 2：系统配置与记忆存储中枢 (ConfigManager) 咕噜咕噜~
 // ==========================================
 class ConfigManager {
   static default() {
     return {
-      admin_password: 'admin',
-      tg_token: '', tg_chat_id: '', tg_title: '#🎬Emby反代',
-      cf_account_id: '', cf_api_token: '',
+      admin_password: 'admin', 
+      cf_account_id: '', cf_api_token: '', 
+      tg_token: '', tg_chat_id: '', tg_title: '#🎬Emby代理',
       enable_whitelist: false, blacklist: [], whitelist: [],
-      custom_html: HTML_TEMPLATES.guide('{{HOST}}'),
-      allowed_ports: '80,443,8096,8920,8443',
-      allowed_domains: '',
-      block_sensitive_paths: true
+      custom_html: '', last_host: '',
+      allowed_ports: '80,443,8096,8920,8443,2096', allowed_domains: '', block_sensitive_paths: true
     };
   }
-
   static async get(env) {
-    if (globalThis.configCache && (Date.now() - globalThis.lastCacheTime < 60000)) {
-      return globalThis.configCache;
-    }
+    if (globalThis.configCache && (Date.now() - globalThis.lastCacheTime < 60000)) return globalThis.configCache;
     let kvConfig = null;
     if (env.kv) {
       try {
@@ -353,7 +46,6 @@ class ConfigManager {
     globalThis.lastCacheTime = Date.now();
     return config;
   }
-
   static async save(env, newConfig) {
     const current = await this.get(env);
     const finalConfig = { ...current, ...newConfig };
@@ -363,159 +55,112 @@ class ConfigManager {
 }
 
 // ==========================================
-// 📊 模块 3：数据统计服务 (StatsManager)
+// 📊 魔法阵 3：数据底座与超光速流控引擎 (StatsManager) 哔哔哔！
 // ==========================================
 class StatsManager {
+  static lastUsage = -1;
+  static lastFetchTime = 0;
+
   static async fetchTodayUsage(accountId, apiToken) {
     if (!accountId || !apiToken) return null;
+    
+    // 🛡️ 贴心的高频缓存小盾牌：保护可怜的 GraphQL API 不被玩坏 (*/ω＼*)
+    if (Date.now() - this.lastFetchTime < 300000 && this.lastUsage !== -1) {
+      return this.lastUsage;
+    }
+
     const now = new Date();
     const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
     const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999)).toISOString();
     const query = `query { viewer { accounts(filter: {accountTag: "${accountId}"}) { workersInvocationsAdaptive(limit: 1, filter: { datetime_geq: "${startOfDay}", datetime_leq: "${endOfDay}" }) { sum { requests } } } } }`;
-
     try {
-      const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query })
+      const res = await fetch('https://api.cloudflare.com/client/v4/graphql', { 
+        method: 'POST', headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) 
       });
       const data = await res.json();
-      return data?.data?.viewer?.accounts[0]?.workersInvocationsAdaptive[0]?.sum?.requests || 0;
-    } catch (e) {
-      return null;
-    }
+      const requests = data?.data?.viewer?.accounts[0]?.workersInvocationsAdaptive[0]?.sum?.requests || 0;
+      
+      this.lastUsage = requests;
+      this.lastFetchTime = Date.now();
+      return requests;
+    } catch (e) { return null; }
   }
 }
 
 // ==========================================
-// 📱 模块 4：消息推送服务 (NotifyManager) 
+// 📱 魔法阵 4：系统监控与大喇叭播报服务 (NotifyManager) 📢
 // ==========================================
 class NotifyManager {
-  static getBeijingTime() {
-    return new Date(Date.now() + 8 * 3600 * 1000).toISOString().replace('T', ' ').split('.')[0];
-  }
-
-  static async sendDailyReport(config, env, host) {
-    const requests = await StatsManager.fetchTodayUsage(config.cf_account_id, config.cf_api_token);
-    if (requests === null) return;
+  static getBeijingTime() { return new Date(Date.now() + 8 * 3600 * 1000).toISOString().replace('T', ' ').split('.')[0]; }
+  
+  static async sendDailyReport(config, env, isTest = false) {
+    const requests = await StatsManager.fetchTodayUsage(config.cf_account_id, config.cf_api_token) || 0;
     const percent = ((requests / 100000) * 100).toFixed(2);
     const time = this.getBeijingTime();
     const title = config.tg_title || '#🎬Emby代理';
-    const statusIcon = requests > 80000 ? '🚨' : '📊';
-
-    let clickUrl = '';
-    if (host) {
-      const reportData = { isReport: true, status: statusIcon, requests, percent, time };
-      clickUrl = `https://${host}/admin/view-log?d=${btoa(encodeURIComponent(JSON.stringify(reportData)))}`;
-    }
-
+    const statusIcon = requests > 80000 ? '🚨' : '✅';
+    
     if (config.tg_token && config.tg_chat_id) {
-      // 美观的 HTML 消息
-      let tgText = `<b>${title} 定时额度播报</b>\n\n`;
-      tgText += `📌 <b>状态</b>: ${statusIcon} 运行正常\n`;
-      tgText += `📊 <b>今日用量</b>: <code>${requests.toLocaleString()}</code> / 100,000\n`;
-      tgText += `📈 <b>占比</b>: ${percent}%\n`;
-      tgText += `⏰ <b>时间</b>: ${time}\n`;
-      if (clickUrl) {
-        tgText += `\n🔗 <a href="${clickUrl}">点击查看详细报表</a>`;
-      }
-      try {
-        await fetch(`https://api.telegram.org/bot${config.tg_token}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: config.tg_chat_id,
-            text: tgText,
-            parse_mode: 'HTML',
-            disable_web_page_preview: true
-          })
-        });
-      } catch (e) {}
+      const typeStr = isTest ? '⚙️ <b>测试调度任务</b>\n' : '';
+      const tgText = `${typeStr}<b>${title} 系统监控日报</b>\n\n📌 运行状态: ${statusIcon} 健康\n📊 全局请求用量: ${requests}/100000 (${percent}%)\n📅 节点时间: ${time}`;
+      try { await fetch(`https://api.telegram.org/bot${config.tg_token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: config.tg_chat_id, text: tgText, parse_mode: 'HTML' }) }); } catch (e) {}
     }
   }
 }
 
 // ==========================================
-// 🖥️ 模块 5：管理后台控制 (AdminController) 
+// 🖥️ 魔法阵 5：傲娇的核心控制台路由器 (AdminController) 哼！
 // ==========================================
 class AdminController {
   static async handle(request, env, url, adminRoute) {
-    // 查看用量卡片页面
-    if (url.pathname === `${adminRoute}/view-log` && request.method === 'GET') {
-      const d = url.searchParams.get('d');
-      if (!d) return new Response('参数缺失', { status: 400 });
-      try {
-        const data = JSON.parse(decodeURIComponent(atob(d)));
-        return new Response(HTML_TEMPLATES.logViewer(data), { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-      } catch (e) {
-        return new Response('数据解析失败', { status: 400 });
-      }
-    }
-
-    // 配置 API
-    if (url.pathname === `${adminRoute}/api/config`) {
-      if (request.method === 'GET') {
-        const config = await ConfigManager.get(env);
-        return new Response(JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } });
-      }
-      if (request.method === 'POST') {
-        const newConfig = await request.json();
-        newConfig.last_host = url.host; // 保存当前域名用于生成报告链接
-        await ConfigManager.save(env, newConfig);
-        return new Response(JSON.stringify({ success: true }));
-      }
-    }
-
-    // 登录 API
+    if (!env.kv) return new Response('FATAL: 呜呜...主人还没有绑定 KV 存储空间，系统没法启动啦！请去 Cloudflare 面板乖乖绑定小写 "kv" 变量哦~ (T_T)', { status: 500, headers: {'Content-Type': 'text/plain;charset=utf-8'} });
+    
+    const currentConfig = await ConfigManager.get(env);
     if (url.pathname === `${adminRoute}/api/login` && request.method === 'POST') {
       const body = await request.json();
-      const config = await ConfigManager.get(env);
-      if (body.password === config.admin_password) {
-        return new Response(JSON.stringify({ success: true }), {
-          headers: {
-            'Set-Cookie': `admin_auth=${config.admin_password}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
-            'Content-Type': 'application/json'
-          }
-        });
+      if (body.password === currentConfig.admin_password) {
+        return new Response(JSON.stringify({ success: true }), { headers: { 'Set-Cookie': `admin_auth=${currentConfig.admin_password}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`, 'Content-Type': 'application/json' } });
       }
       return new Response(JSON.stringify({ success: false }), { status: 401 });
     }
-
-    // 用量统计 API
-    if (url.pathname === `${adminRoute}/api/stats` && request.method === 'GET') {
-      const config = await ConfigManager.get(env);
-      const usage = await StatsManager.fetchTodayUsage(config.cf_account_id, config.cf_api_token);
-      return new Response(JSON.stringify({ usage: usage !== null ? usage : -1 }), { headers: { 'Content-Type': 'application/json' } });
-    }
-
-    // 检查 KV 绑定
-    if (!env.kv) {
-      return new Response('未绑定 KV 存储', { status: 500 });
-    }
-
-    // 登录验证
+    
     const cookies = request.headers.get('Cookie') || '';
-    const config = await ConfigManager.get(env);
-    if (!cookies.includes(`admin_auth=${config.admin_password}`)) {
-      if (url.pathname.startsWith(`${adminRoute}/api`)) {
-        return new Response('Unauthorized', { status: 401 });
-      }
+    if (!cookies.includes(`admin_auth=${currentConfig.admin_password}`)) {
+      if (url.pathname.startsWith(`${adminRoute}/api`)) return new Response('Unauthorized', { status: 401 });
       return new Response(HTML_TEMPLATES.login(adminRoute), { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
     }
-
-    // 返回管理后台主界面
+    
+    if (url.pathname === `${adminRoute}/api/config` && request.method === 'GET') {
+      return new Response(JSON.stringify(currentConfig), { headers: { 'Content-Type': 'application/json' }});
+    }
+    if (url.pathname === `${adminRoute}/api/config` && request.method === 'POST') {
+      const newConfig = await request.json();
+      newConfig.last_host = url.host; 
+      await ConfigManager.save(env, newConfig);
+      return new Response(JSON.stringify({ success: true }));
+    }
+    if (url.pathname === `${adminRoute}/api/stats` && request.method === 'GET') {
+      const usage = await StatsManager.fetchTodayUsage(currentConfig.cf_account_id, currentConfig.cf_api_token);
+      return new Response(JSON.stringify({ usage: usage !== null ? usage : -1 }), { headers: { 'Content-Type': 'application/json' }});
+    }
+    if (url.pathname === `${adminRoute}/api/test-notify` && request.method === 'POST') {
+      await NotifyManager.sendDailyReport(currentConfig, env, true);
+      return new Response(JSON.stringify({ success: true }));
+    }
+    
     return new Response(HTML_TEMPLATES.admin(adminRoute), { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
   }
 }
 
-// ==========================================
-// 🚀 模块 6：核心反代引擎 (ProxyEngine) 
-// ==========================================
+// 🛡️ 魔法符文阵：预编译的正则全局常量池 ( •̀ ω •́ )y
 const STATIC_REGEX = /\.(jpg|jpeg|png|gif|svg|webp|ico|css|js|woff2?|ttf)$/i;
 const API_CACHE_REGEX = /\/(Items\/Resume|Users\/.*\/Items|PlaybackInfo|Videos\/.*\/stream)/i;
 const VIDEO_REGEX = /\/(Videos\/|Items\/.*\/Download|\/Items\/.*\/Stream|\/Audio\/)/i;
 const SENSITIVE_PATH_REGEX = /(\.\.|\/\.(env|git|svn|htaccess)|(wp-|admin|cgi-bin|\.php))/i;
 
+// ==========================================
+// 🚀 魔法阵 6：超厉害的高性能流量代理引擎 (ProxyEngine) 咻~
+// ==========================================
 class ProxyEngine {
   static parseTarget(str, url, config) {
     if (!str || str.startsWith('web/') || str.startsWith('emby/')) return null;
@@ -531,44 +176,34 @@ class ProxyEngine {
 
     try {
       const u = new URL(finalStr);
-      const ignoreHosts = ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'apple-touch-icon-precomposed.png'];
-      if (ignoreHosts.includes(u.hostname.toLowerCase())) return null;
-
-      // 端口检查
-      const allowedPorts = (config.allowed_ports || '80,443,8096,8920,8443').split(',').map(p => p.trim());
-      const port = u.port || (u.protocol === 'https:' ? '443' : '80');
-      if (!allowedPorts.includes(port)) return null;
-
-      // 域名白名单
-      if (config.allowed_domains) {
-        const domains = config.allowed_domains.split(',').map(d => d.trim()).filter(Boolean);
-        if (domains.length > 0) {
-          const matched = domains.some(d => u.hostname === d || u.hostname.endsWith('.' + d));
-          if (!matched) return null;
-        }
+      if (config.allowed_ports) {
+        const port = u.port || (u.protocol === 'https:' ? '443' : '80');
+        const allowedPorts = config.allowed_ports.split(',').map(p => p.trim());
+        if (!allowedPorts.includes(port)) return null;
       }
-
+      if (config.allowed_domains) {
+        const domains = config.allowed_domains.split(',').map(d => d.trim());
+        const matched = domains.some(d => u.hostname === d || u.hostname.endsWith('.' + d));
+        if (!matched) return null;
+      }
       if (u.pathname.startsWith('/System') || u.pathname.startsWith('/Users')) return null;
-
       return u;
-    } catch (e) {
-      return null;
-    }
+    } catch (e) { return null; }
   }
 
   static checkAccess(config, clientIP, targetHost) {
     const isMatch = (list) => {
-      if (!Array.isArray(list)) return false;
+      if (!list || !Array.isArray(list)) return false;
       for (let item of list) {
-        if (!item) continue;
-        const clean = item.replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].trim();
+        let line = item.trim();
+        if (!line || line.startsWith('#') || line.startsWith('//')) continue;
+        let clean = line.replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].trim();
         if (clean === clientIP || clean === targetHost) return true;
       }
       return false;
     };
-
-    if (isMatch(config.blacklist)) return { allowed: false, msg: 'Blocked by blacklist' };
-    if (config.enable_whitelist && !isMatch(config.whitelist)) return { allowed: false, msg: 'Not in whitelist' };
+    if (isMatch(config.blacklist)) return { allowed: false, msg: 'Blocked by Firewall Policy.' };
+    if (config.enable_whitelist && !isMatch(config.whitelist)) return { allowed: false, msg: 'Access Denied: Zero Trust Policy Active.' };
     return { allowed: true };
   }
 
@@ -577,24 +212,48 @@ class ProxyEngine {
     if (!contentType.includes('json') && !contentType.includes('xml') && !contentType.includes('text')) {
       return response;
     }
-    const text = await response.text();
-    const escapedTarget = targetOrigin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(escapedTarget, 'g');
-    const newText = text.replace(regex, proxyOrigin);
-    return new Response(newText, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers
-    });
+
+    // 💥 体积熔断小卫士：绝对不可以让超大包裹撑坏内存肚子鸭！(๑•̀ㅂ•́)و✧
+    const contentLength = response.headers.get('Content-Length');
+    if (contentLength && parseInt(contentLength) > 4194304) {
+      return response;
+    }
+
+    try {
+      const text = await response.text();
+      
+      if (text.length > 4194304) {
+        const fallbackHeaders = new Headers(response.headers);
+        fallbackHeaders.delete('Content-Encoding'); 
+        fallbackHeaders.delete('Content-Length');
+        return new Response(text, { status: response.status, headers: fallbackHeaders });
+      }
+
+      const escapedTarget = targetOrigin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedTarget, 'g');
+      const newText = text.replace(regex, proxyOrigin);
+
+      const newHeaders = new Headers(response.headers);
+      newHeaders.delete('Content-Encoding'); 
+      newHeaders.delete('Content-Length');
+
+      return new Response(newText, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: newHeaders
+      });
+    } catch (e) {
+      return response;
+    }
   }
 
-  static async handle(request, env, ctx, config) {
+  static async handle(request, env, ctx, config, adminRoute) {
     const url = new URL(request.url);
     const clientIP = request.headers.get('CF-Connecting-IP') || 'Unknown';
 
-    // 敏感路径拦截
+    // 🛡️ 核心拦截结界：坏蛋路径秒级抹杀！绝对不让奇怪的扫描进来哦！(▼へ▼メ)
     if (config.block_sensitive_paths && SENSITIVE_PATH_REGEX.test(url.pathname)) {
-      return new Response('Forbidden', { status: 403 });
+      return new Response('404 Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
     }
 
     let targetUrl = this.parseTarget(url.pathname.slice(1) + url.search, url, config);
@@ -603,20 +262,23 @@ class ProxyEngine {
       if (referer) {
         try {
           const refUrl = new URL(referer);
-          targetUrl = this.parseTarget(refUrl.pathname.slice(1) + refUrl.search, refUrl, config);
+          const refTarget = this.parseTarget(refUrl.pathname.slice(1) + refUrl.search, refUrl, config);
+          if (refTarget) targetUrl = new URL(url.pathname + url.search, refTarget.origin);
         } catch (e) {}
       }
     }
 
+    // 🌐 幻象伪装引擎：悄悄接管前台，给坏人看假动作，保护底层小秘密~ (✿◡‿◡)
     if (!targetUrl) {
-      const htmlContent = (config.custom_html || HTML_TEMPLATES.guide('{{HOST}}')).replace(/{{HOST}}/g, url.host);
+      const stats = await StatsManager.fetchTodayUsage(config.cf_account_id, config.cf_api_token);
+      const currentStats = stats !== null ? stats : -1;
+      const htmlContent = config.custom_html ? config.custom_html.replace(/{{HOST}}/g, url.host) : HTML_TEMPLATES.guide(url.host, currentStats);
       return new Response(htmlContent, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
     }
 
     const authResult = this.checkAccess(config, clientIP, targetUrl.hostname);
     if (!authResult.allowed) return new Response(authResult.msg, { status: 403 });
 
-    // WebSocket 
     if (request.headers.get('Upgrade') === 'websocket') {
       const wsTargetUrl = `${targetUrl.protocol === 'https:' ? 'wss:' : 'ws:'}//${targetUrl.host}${targetUrl.pathname}${targetUrl.search}`;
       const [client, server] = Object.values(new WebSocketPair());
@@ -664,8 +326,8 @@ class ProxyEngine {
       let response = await fetch(newRequest);
       let resHeaders = new Headers(response.headers);
       resHeaders.set('Access-Control-Allow-Origin', '*');
+      resHeaders.set('Access-Control-Expose-Headers', '*');
 
-      // 处理重定向
       if ([301, 302, 303, 307, 308].includes(response.status)) {
         const location = resHeaders.get('location');
         if (location) {
@@ -684,6 +346,7 @@ class ProxyEngine {
               });
               const finalHeaders = new Headers(externalResponse.headers);
               finalHeaders.set('Access-Control-Allow-Origin', '*');
+              finalHeaders.set('Access-Control-Expose-Headers', '*');
               return new Response(externalResponse.body, { status: externalResponse.status, headers: finalHeaders });
             }
             if (locUrl.hostname === targetUrl.hostname) {
@@ -693,16 +356,44 @@ class ProxyEngine {
         }
       }
 
-      // 响应体重写
+      if (request.method === 'POST' && targetUrl.pathname.includes('/PlaybackInfo') && response.status === 200) {
+        try {
+          const clone = response.clone();
+          const json = await clone.json();
+          let modified = false;
+          if (json.MediaSources && Array.isArray(json.MediaSources)) {
+            for (let source of json.MediaSources) {
+              if (source.DirectStreamUrl && source.DirectStreamUrl.match(/^https?:\/\//)) {
+                if (!source.DirectStreamUrl.startsWith(url.origin)) {
+                    source.DirectStreamUrl = `${url.origin}/${source.DirectStreamUrl}`;
+                }
+                modified = true;
+              }
+              if (source.TranscodingUrl && source.TranscodingUrl.match(/^https?:\/\//)) {
+                if (!source.TranscodingUrl.startsWith(url.origin)) {
+                    source.TranscodingUrl = `${url.origin}/${source.TranscodingUrl}`;
+                }
+                modified = true;
+              }
+            }
+          }
+          if (modified) {
+            resHeaders.delete('Content-Length'); 
+            resHeaders.set('Content-Type', 'application/json');
+            return new Response(JSON.stringify(json), { status: 200, headers: resHeaders });
+          }
+        } catch(e) {}
+      }
+
       const proxyOrigin = url.origin;
       const targetOrigin = targetUrl.origin;
       if (response.status === 200 && isGetReq && !isVideo && !isImage) {
         response = await this.rewriteResponseBody(response, proxyOrigin, targetOrigin);
         resHeaders = new Headers(response.headers);
         resHeaders.set('Access-Control-Allow-Origin', '*');
+        resHeaders.set('Access-Control-Expose-Headers', '*');
       }
 
-      // 缓存策略
       if (response.status === 200 && isGetReq) {
         if (isImage) {
           resHeaders.set('Cache-Control', targetUrl.search.toLowerCase().includes('tag=') ? 'public, max-age=31536000, immutable' : 'public, max-age=7200');
@@ -721,7 +412,7 @@ class ProxyEngine {
 
       return new Response(response.body, { status: response.status, statusText: response.statusText, headers: resHeaders });
     } catch (e) {
-      return new Response(JSON.stringify({ error: `代理请求失败: ${e.message}` }), {
+      return new Response(JSON.stringify({ error: `Proxy Error: ${e.message}` }), {
         status: 502,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
       });
@@ -730,13 +421,19 @@ class ProxyEngine {
 }
 
 // ==========================================
-// 🚪 模块 7：Worker 统一入口
+// 🚪 终极魔法阵 7：边缘节点调度大门 (Main Entry) 欢迎光临~
 // ==========================================
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    
+    if (url.pathname === '/favicon.ico' || url.pathname === '/apple-touch-icon.png') {
+      return new Response(null, { status: 204 });
+    }
+
+    // 哒咩！绝对不可以偷用自带的 workers 域名哦，要用专属的自定义域名才行！(乂'ω')
     if (url.hostname.endsWith('.workers.dev') || url.hostname.endsWith('.pages.dev')) {
-      return new Response('Access Denied', { status: 403 });
+      return new Response('Access Denied: Please use a custom domain.', { status: 403 });
     }
 
     if (request.method === 'OPTIONS') {
@@ -745,7 +442,8 @@ export default {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': '*',
-          'Access-Control-Max-Age': '86400'
+          'Access-Control-Max-Age': '86400',
+          'Access-Control-Expose-Headers': '*'
         }
       });
     }
@@ -753,19 +451,20 @@ export default {
     let rawAdmin = env.admin || '/emby-admin';
     if (!rawAdmin.startsWith('/')) rawAdmin = '/' + rawAdmin;
 
+    // 乖乖站好排队~ 这里是路由分发小助手，管理去左边，业务去右边 (´▽`ʃ♡ƪ)
     if (url.pathname.startsWith(rawAdmin)) {
       return AdminController.handle(request, env, url, rawAdmin);
     } else {
       const config = await ConfigManager.get(env);
-      return ProxyEngine.handle(request, env, ctx, config);
+      return ProxyEngine.handle(request, env, ctx, config, rawAdmin);
     }
   },
 
+  // ⏰ 滴答滴答~ 自动化计划任务小闹钟响啦 (Cron Task Engine) ヾ(≧▽≦*)o
   async scheduled(controller, env, ctx) {
     const config = await ConfigManager.get(env);
-    if (config.cf_account_id && config.cf_api_token && config.tg_token && config.tg_chat_id) {
-      const host = config.last_host || '未知';
-      ctx.waitUntil(NotifyManager.sendDailyReport(config, env, host));
+    if (config.cf_account_id && config.cf_api_token) {
+      ctx.waitUntil(NotifyManager.sendDailyReport(config, env));
     }
   }
 };
