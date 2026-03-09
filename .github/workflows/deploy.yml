@@ -1,25 +1,30 @@
-name: Deploy Cloudflare Worker
+name: Deploy to Cloudflare Workers
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
+      - master
+  workflow_dispatch: 
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    name: Deploy
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Inject KV ID
-        run: sed -i 's/YOUR_KV_ID/${{ secrets.CF_KV_ID }}/g' wrangler.toml
+      - name: Generate wrangler.toml
+        run: |
+          echo 'name = "emby-proxy"' > wrangler.toml
+          echo 'main = "_worker.js"' >> wrangler.toml
+          echo 'compatibility_date = "2024-03-08"' >> wrangler.toml
+          echo '[[kv_namespaces]]' >> wrangler.toml
+          echo 'binding = "kv"' >> wrangler.toml
+          echo 'id = "${{ secrets.CF_KV_ID }}"' >> wrangler.toml
 
-      - name: Deploy to Cloudflare Workers
+      - name: Deploy to Cloudflare
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: deploy
