@@ -1,6 +1,6 @@
 /**
- * 🎬 Emby-Cloudflare-Proxy 
- * @description 
+ * 🎬 Emby-Cloudflare-Proxy
+ * @description
  */
 
 // ==========================================
@@ -12,7 +12,7 @@ const HTML_TEMPLATES = {
 
   // 管理后台登录页 (小锁头防身用 🔒)
   login: (route) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>控制台登录</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-gray-50 flex items-center justify-center h-screen"><div class="bg-white p-10 rounded-2xl shadow-xl w-96 border border-gray-100"><h2 class="text-3xl font-extrabold text-center text-blue-600 mb-8 tracking-tight">🎬 代理控制台</h2><div class="space-y-6"><div><label class="block text-sm font-medium text-gray-700 mb-2">管理员密码</label><input type="password" id="pwd" class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" placeholder="输入密码..." @keyup.enter="login"></div><button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all active:scale-[0.98]">登 录</button></div><p id="err" class="text-red-500 text-sm mt-4 text-center hidden bg-red-50 py-2 rounded-lg">🔒 密码错误，请重试</p></div><script>async function login(){const p=document.getElementById('pwd').value;const res=await fetch('${route}/api/login',{method:'POST',body:JSON.stringify({password:p})});if(res.ok)location.reload();else document.getElementById('err').classList.remove('hidden');}</script></body></html>`,
-      
+
   // 管理后台主界面 (这里面超多可爱的按钮和设置项哦 ✨)
   admin: (route) => `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>反代控制台</title><script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script><style>::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#94a3b8}.fade-enter-active,.fade-leave-active{transition:opacity .3s ease,transform .3s ease}.fade-enter-from,.fade-leave-to{opacity:0;transform:translateY(-10px)}</style></head><body class="bg-[#F8FAFC] text-slate-800 antialiased font-sans"><div id="app" class="max-w-6xl mx-auto py-10 px-4 sm:px-6 lg:px-8"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-slate-200 pb-6 mb-8 gap-4"><div><h1 class="text-4xl font-extrabold text-blue-600 tracking-tight">🎬 Proxy Panel</h1><p class="text-slate-500 mt-2 flex items-center gap-2"><span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-md font-semibold">v9.7.0 旗舰提速版</span><span>全隐蔽防扫描 · 毫秒级无感拦截 · 智能监控防护</span></p></div><div class="flex gap-3"><button @click="test" class="bg-purple-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-purple-700 transition-all shadow-sm hover:shadow-md">📢 测试系统报表</button><button @click="save" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all active:scale-95 flex items-center gap-2"><svg v-if="saving" class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span v-if="saving">保存中...</span><span v-else>💾 保存所有设置</span></button></div></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden"><h3 class="text-blue-100 font-medium mb-2 flex items-center gap-2">📊 今日用量 (UTC)</h3><div class="text-4xl font-extrabold mt-4"><span v-if="loadingStats" class="animate-pulse">数据同步中...</span><span v-else-if="stats === -1" class="text-xl">待配置系统 Token</span><span v-else>{{ stats.toLocaleString() }} <span class="text-lg font-normal text-blue-200">/ 10万</span></span></div><div v-if="stats !== -1 && !loadingStats" class="mt-5 bg-black/20 rounded-full h-2 w-full overflow-hidden"><div class="bg-white h-full rounded-full transition-all duration-1000" :style="{ width: Math.min((stats / 100000) * 100, 100) + '%' }"></div></div></div><div class="col-span-1 md:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center"><div class="w-full"><div class="flex items-center justify-between mb-4"><h3 class="font-bold text-slate-800 text-lg mb-1 flex items-center gap-2"><span class="text-xl">🔐</span> 当前管理路径</h3><span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-lg font-mono text-sm border border-slate-200">${route}</span></div><p class="text-slate-500 text-sm mb-4">如需修改管理入口，请在 Cloudflare Workers 的变量管理中调整 <b>admin</b> 的值。</p><div class="bg-blue-50/50 rounded-xl p-4 border border-blue-100"><p class="text-blue-800 text-sm flex items-start gap-2"><span class="text-base mt-0.5">⏰</span><span><b>自动巡航与报表启用指南：</b>请在 CF 触发器中添加 Cron 表达式 <code class="font-bold bg-white px-1.5 rounded text-blue-600 border border-blue-200">0 12 * * *</code> (对应北京时间 20:00 准时播报)。</span></p></div></div></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6"><div><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">⚙️</div>系统核心认证与审计</h2><label class="block text-sm font-semibold text-slate-700 mb-1.5">🔑 后台访问密码</label><input v-model="c.admin_password" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500"></div><div class="pt-4 border-t border-slate-100"></div><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">☁️ CF Account ID (用于数据底座)</label><input v-model="c.cf_account_id" type="text" placeholder="用于拉取全局额度统计数据..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500"></div><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">🔑 CF API Token (只读分析权限)</label><input v-model="c.cf_api_token" type="password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-indigo-500"></div></div><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 space-y-6"><div><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-sky-50 flex items-center justify-center text-sky-500 text-xl">📱</div>Telegram 监控报表通道</h2><label class="block text-sm font-semibold text-slate-700 mb-1.5">🏷️ 播报系统抬头 (Title)</label><input v-model="c.tg_title" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-sm focus:ring-2 focus:ring-sky-500"></div><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-slate-500 mb-1">Bot Token 密钥</label><input v-model="c.tg_token" type="password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-sky-500"></div><div><label class="block text-xs font-bold text-slate-500 mb-1">目标 Chat ID</label><input v-model="c.tg_chat_id" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-sky-500"></div></div></div></div><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8"><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3 mb-6"><div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 text-xl">🌐</div>底层伪装与前台静态化托管</h2><textarea v-model="c.custom_html" rows="8" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 font-mono text-[13px] focus:ring-2 focus:ring-purple-400" placeholder="⚠️ 注意：留空此框，系统将自动挂载并渲染带动态进度条的高级仪表盘大屏！&#10;仅当您需要接管前台，使用自定义静态 HTML 作为伪装页时，才在此处填入代码。"></textarea></div><div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 mb-8"><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6"><h2 class="text-xl font-bold text-slate-800 flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 text-xl">🛡️</div>零信任安全与网络微隔离</h2><label class="flex items-center space-x-3 cursor-pointer p-2.5 pr-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all"><div class="relative flex items-center"><input type="checkbox" v-model="c.enable_whitelist" class="peer sr-only"><div class="w-11 h-6 bg-slate-200 peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div></div><span class="font-semibold text-sm text-slate-700">启用强制白名单模式</span></label></div><div class="grid gap-6 transition-all duration-500 ease-in-out" :class="c.enable_whitelist ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:max-w-2xl'"><div><label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2"><span class="w-2 h-2 rounded-full bg-red-400"></span>全局黑名单 (实时阻断)</label><textarea v-model="blacklistText" rows="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-red-400" placeholder="# 在行首加 # 可以写备注&#10;11.22.33.44&#10;bad-emby.com"></textarea></div><transition name="fade"><div v-if="c.enable_whitelist"><label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>核心白名单 (信任放行)</label><textarea v-model="whitelistText" rows="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-mono text-sm focus:ring-2 focus:ring-emerald-400" placeholder="# 我的核心服节点&#10;emby.example.com&#10;&#10;# 系统内置智能正则，可直接贴全链&#10;https://demo.emby.media:8443"></textarea></div></transition></div><div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">🔌 应用层端口微隔离 (逗号分隔)</label><input v-model="c.allowed_ports" type="text" placeholder="80,443,8096,8920,8443,2096" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400"></div><div><label class="block text-sm font-semibold text-slate-700 mb-1.5">🌍 信任目标基准域 (留空则全放行)</label><input v-model="c.allowed_domains" type="text" placeholder="emby.example.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-400"></div><div class="flex items-center md:col-span-2"><label class="flex items-center space-x-3 cursor-pointer"><input type="checkbox" v-model="c.block_sensitive_paths" class="w-4 h-4 text-blue-600 bg-slate-50 border-slate-200 rounded focus:ring-blue-500"><span class="text-sm font-medium text-slate-700">启用敏感路径隐身防御 (封堵 .env, admin, php 等恶意扫描)</span></label></div></div></div></div><script>const {createApp,ref,computed,onMounted}=Vue;createApp({setup(){const c=ref({admin_password:'',cf_account_id:'',cf_api_token:'',tg_token:'',tg_chat_id:'',tg_title:'',custom_html:'',enable_whitelist:false,blacklist:[],whitelist:[],allowed_ports:'80,443,8096,8920,8443,2096',allowed_domains:'',block_sensitive_paths:true});const saving=ref(false);const stats=ref(-1);const loadingStats=ref(true);const route='${route}';const blacklistText=computed({get:()=>(c.value.blacklist||[]).join('\\n'),set:(v)=>c.value.blacklist=v.split('\\n')});const whitelistText=computed({get:()=>(c.value.whitelist||[]).join('\\n'),set:(v)=>c.value.whitelist=v.split('\\n')});const loadStats=async()=>{loadingStats.value=true;try{const res=await fetch(route+'/api/stats');if(res.ok){const data=await res.json();stats.value=data.usage;}}catch(e){}loadingStats.value=false;};onMounted(async()=>{const res=await fetch(route+'/api/config');if(res.ok)c.value={...c.value,...await res.json()};await loadStats();});const save=async()=>{saving.value=true;await fetch(route+'/api/config',{method:'POST',body:JSON.stringify(c.value)});setTimeout(()=>{saving.value=false;alert('✨ 系统配置热重载成功！');loadStats();},500);};const test=async()=>{await fetch(route+'/api/test-notify',{method:'POST'});alert('✅ 测试调度已触发，请检查您的 TG 接收终端！');};return{c,saving,blacklistText,whitelistText,save,test,stats,loadingStats,route}}}).mount('#app');</script></body></html>`
 };
@@ -24,8 +24,8 @@ const HTML_TEMPLATES = {
 class ConfigManager {
   static default() {
     return {
-      admin_password: 'admin', 
-      cf_account_id: '', cf_api_token: '', 
+      admin_password: 'admin',
+      cf_account_id: '', cf_api_token: '',
       tg_token: '', tg_chat_id: '', tg_title: '#🎬Emby代理',
       enable_whitelist: false, blacklist: [], whitelist: [],
       custom_html: '', last_host: '',
@@ -63,8 +63,7 @@ class StatsManager {
 
   static async fetchTodayUsage(accountId, apiToken) {
     if (!accountId || !apiToken) return null;
-    
-    // 🛡️ 贴心的高频缓存小盾牌：保护可怜的 GraphQL API 不被玩坏 (*/ω＼*)
+
     if (Date.now() - this.lastFetchTime < 300000 && this.lastUsage !== -1) {
       return this.lastUsage;
     }
@@ -73,17 +72,25 @@ class StatsManager {
     const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).toISOString();
     const endOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999)).toISOString();
     const query = `query { viewer { accounts(filter: {accountTag: "${accountId}"}) { workersInvocationsAdaptive(limit: 1, filter: { datetime_geq: "${startOfDay}", datetime_leq: "${endOfDay}" }) { sum { requests } } } } }`;
+
     try {
-      const res = await fetch('https://api.cloudflare.com/client/v4/graphql', { 
-        method: 'POST', headers: { 'Authorization': `Bearer ${apiToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ query }) 
+      const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ query })
       });
       const data = await res.json();
       const requests = data?.data?.viewer?.accounts[0]?.workersInvocationsAdaptive[0]?.sum?.requests || 0;
-      
+
       this.lastUsage = requests;
       this.lastFetchTime = Date.now();
       return requests;
-    } catch (e) { return null; }
+    } catch (e) {
+      return null;
+    }
   }
 }
 
@@ -91,19 +98,31 @@ class StatsManager {
 // 📱 魔法阵 4：系统监控与大喇叭播报服务 (NotifyManager) 📢
 // ==========================================
 class NotifyManager {
-  static getBeijingTime() { return new Date(Date.now() + 8 * 3600 * 1000).toISOString().replace('T', ' ').split('.')[0]; }
-  
+  static getBeijingTime() {
+    return new Date(Date.now() + 8 * 3600 * 1000).toISOString().replace('T', ' ').split('.')[0];
+  }
+
   static async sendDailyReport(config, env, isTest = false) {
     const requests = await StatsManager.fetchTodayUsage(config.cf_account_id, config.cf_api_token) || 0;
     const percent = ((requests / 100000) * 100).toFixed(2);
     const time = this.getBeijingTime();
     const title = config.tg_title || '#🎬Emby代理';
     const statusIcon = requests > 80000 ? '🚨' : '✅';
-    
+
     if (config.tg_token && config.tg_chat_id) {
       const typeStr = isTest ? '⚙️ <b>测试调度任务</b>\n' : '';
       const tgText = `${typeStr}<b>${title} 系统监控日报</b>\n\n📌 运行状态: ${statusIcon} 健康\n📊 全局请求用量: ${requests}/100000 (${percent}%)\n📅 节点时间: ${time}`;
-      try { await fetch(`https://api.telegram.org/bot${config.tg_token}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: config.tg_chat_id, text: tgText, parse_mode: 'HTML' }) }); } catch (e) {}
+      try {
+        await fetch(`https://api.telegram.org/bot${config.tg_token}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: config.tg_chat_id,
+            text: tgText,
+            parse_mode: 'HTML'
+          })
+        });
+      } catch (e) {}
     }
   }
 }
@@ -114,59 +133,77 @@ class NotifyManager {
 class AdminController {
   static async handle(request, env, url, adminRoute) {
     if (!env.kv) return new Response('FATAL: 呜呜...主人还没有绑定 KV 存储空间，系统没法启动啦！请去 Cloudflare 面板乖乖绑定小写 "kv" 变量哦~ (T_T)', { status: 500, headers: {'Content-Type': 'text/plain;charset=utf-8'} });
-    
+
     const currentConfig = await ConfigManager.get(env);
+
     if (url.pathname === `${adminRoute}/api/login` && request.method === 'POST') {
       const body = await request.json();
       if (body.password === currentConfig.admin_password) {
-        return new Response(JSON.stringify({ success: true }), { headers: { 'Set-Cookie': `admin_auth=${currentConfig.admin_password}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`, 'Content-Type': 'application/json' } });
+        return new Response(JSON.stringify({ success: true }), {
+          headers: {
+            'Set-Cookie': `admin_auth=${currentConfig.admin_password}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`,
+            'Content-Type': 'application/json'
+          }
+        });
       }
       return new Response(JSON.stringify({ success: false }), { status: 401 });
     }
-    
+
     const cookies = request.headers.get('Cookie') || '';
     if (!cookies.includes(`admin_auth=${currentConfig.admin_password}`)) {
       if (url.pathname.startsWith(`${adminRoute}/api`)) return new Response('Unauthorized', { status: 401 });
       return new Response(HTML_TEMPLATES.login(adminRoute), { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
     }
-    
+
     if (url.pathname === `${adminRoute}/api/config` && request.method === 'GET') {
       return new Response(JSON.stringify(currentConfig), { headers: { 'Content-Type': 'application/json' }});
     }
+
     if (url.pathname === `${adminRoute}/api/config` && request.method === 'POST') {
       const newConfig = await request.json();
-      newConfig.last_host = url.host; 
+      newConfig.last_host = url.host;
       await ConfigManager.save(env, newConfig);
       return new Response(JSON.stringify({ success: true }));
     }
+
     if (url.pathname === `${adminRoute}/api/stats` && request.method === 'GET') {
       const usage = await StatsManager.fetchTodayUsage(currentConfig.cf_account_id, currentConfig.cf_api_token);
       return new Response(JSON.stringify({ usage: usage !== null ? usage : -1 }), { headers: { 'Content-Type': 'application/json' }});
     }
+
     if (url.pathname === `${adminRoute}/api/test-notify` && request.method === 'POST') {
       await NotifyManager.sendDailyReport(currentConfig, env, true);
       return new Response(JSON.stringify({ success: true }));
     }
-    
+
     return new Response(HTML_TEMPLATES.admin(adminRoute), { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
   }
 }
 
-// 🛡️ 魔法符文阵：预编译的正则全局常量池 ( •̀ ω •́ )y
-const STATIC_REGEX = /\.(jpg|jpeg|png|gif|svg|webp|ico|css|js|woff2?|ttf)$/i;
-const API_CACHE_REGEX = /\/(Items\/Resume|Users\/.*\/Items|PlaybackInfo|Videos\/.*\/stream)/i;
-const VIDEO_REGEX = /\/(Videos\/|Items\/.*\/Download|\/Items\/.*\/Stream|\/Audio\/)/i;
+// 🛡️ 魔法符文阵：预编译的正则全局常量池
+const STATIC_REGEX = /\.(jpg|jpeg|png|gif|svg|webp|ico|css|js|woff2?|ttf|m3u8)$/i;
+const API_CACHE_REGEX = /\/(Items\/Resume|System\/Info\/Public|DisplayPreferences|Artists|Genres|Libraries|Filters)$/i;
+const VIDEO_REGEX = /\/(Videos\/.*\/(stream|original)|Items\/.*\/(Download|Stream)|Audio\/.*\/stream)/i;
 const SENSITIVE_PATH_REGEX = /(\.\.|\/\.(env|git|svn|htaccess)|(wp-|admin|cgi-bin|\.php))/i;
 
 // ==========================================
-// 🚀 魔法阵 6：超厉害的高性能流量代理引擎 (ProxyEngine) 咻~
+// 🚀 魔法阵 6：高性能流量代理引擎（视频优化版）
 // ==========================================
 class ProxyEngine {
+  static fetchWithTimeout(input, init = {}, timeout = 10000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort('Upstream timeout'), timeout);
+    return fetch(input, {
+      ...init,
+      signal: controller.signal
+    }).finally(() => clearTimeout(timer));
+  }
+
   static parseTarget(str, url, config) {
     if (!str || str.startsWith('web/') || str.startsWith('emby/')) return null;
 
     let finalStr = str;
-    if (!finalStr.startsWith('http')) {
+    if (!/^https?:\/\//i.test(finalStr)) {
       if (finalStr.includes(':443') || finalStr.includes(':8443') || finalStr.includes(':8920')) {
         finalStr = 'https://' + finalStr;
       } else {
@@ -176,26 +213,33 @@ class ProxyEngine {
 
     try {
       const u = new URL(finalStr);
+
       if (config.allowed_ports) {
         const port = u.port || (u.protocol === 'https:' ? '443' : '80');
-        const allowedPorts = config.allowed_ports.split(',').map(p => p.trim());
-        if (!allowedPorts.includes(port)) return null;
+        const allowedPorts = config.allowed_ports.split(',').map(p => p.trim()).filter(Boolean);
+        if (allowedPorts.length && !allowedPorts.includes(port)) return null;
       }
+
       if (config.allowed_domains) {
-        const domains = config.allowed_domains.split(',').map(d => d.trim());
-        const matched = domains.some(d => u.hostname === d || u.hostname.endsWith('.' + d));
-        if (!matched) return null;
+        const domains = config.allowed_domains.split(',').map(d => d.trim()).filter(Boolean);
+        if (domains.length) {
+          const matched = domains.some(d => u.hostname === d || u.hostname.endsWith('.' + d));
+          if (!matched) return null;
+        }
       }
+
       if (u.pathname.startsWith('/System') || u.pathname.startsWith('/Users')) return null;
       return u;
-    } catch (e) { return null; }
+    } catch (e) {
+      return null;
+    }
   }
 
   static checkAccess(config, clientIP, targetHost) {
     const isMatch = (list) => {
       if (!list || !Array.isArray(list)) return false;
       for (let item of list) {
-        let line = item.trim();
+        let line = String(item || '').trim();
         if (!line || line.startsWith('#') || line.startsWith('//')) continue;
         let clean = line.replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].trim();
         if (clean === clientIP || clean === targetHost) return true;
@@ -207,56 +251,418 @@ class ProxyEngine {
     return { allowed: true };
   }
 
-  static async rewriteResponseBody(response, proxyOrigin, targetOrigin) {
-    const contentType = response.headers.get('Content-Type') || '';
-    if (!contentType.includes('json') && !contentType.includes('xml') && !contentType.includes('text')) {
-      return response;
+  static withCors(headers) {
+    const h = new Headers(headers);
+    h.set('Access-Control-Allow-Origin', '*');
+    h.set('Access-Control-Expose-Headers', '*');
+    return h;
+  }
+
+  static buildUpstreamHeaders(request, targetUrl, isVideo = false) {
+    const headers = new Headers();
+
+    const passHeaders = [
+      'Accept',
+      'Accept-Encoding',
+      'Accept-Language',
+      'Authorization',
+      'Cache-Control',
+      'Content-Type',
+      'If-Match',
+      'If-Modified-Since',
+      'If-None-Match',
+      'If-Range',
+      'Range',
+      'User-Agent',
+      'X-Emby-Authorization',
+      'X-Emby-Client',
+      'X-Emby-Device-Id',
+      'X-Emby-Device-Name',
+      'X-Emby-Token',
+      'X-Emby-Language',
+      'X-MediaBrowser-Token',
+      'X-MediaBrowser-Client',
+      'X-MediaBrowser-Device-Id',
+      'X-MediaBrowser-Device-Name',
+      'X-MediaBrowser-Language'
+    ];
+
+    for (const key of passHeaders) {
+      const value = request.headers.get(key);
+      if (value) headers.set(key, value);
     }
 
-    // 💥 体积熔断小卫士：绝对不可以让超大包裹撑坏内存肚子鸭！(๑•̀ㅂ•́)و✧
-    const contentLength = response.headers.get('Content-Length');
-    if (contentLength && parseInt(contentLength) > 4194304) {
-      return response;
+    headers.set('Host', targetUrl.host);
+
+    const origin = request.headers.get('Origin');
+    if (origin) headers.set('Origin', targetUrl.origin);
+
+    const referer = request.headers.get('Referer');
+    if (referer) headers.set('Referer', targetUrl.origin + '/');
+
+    if (!isVideo) {
+      const pragma = request.headers.get('Pragma');
+      if (pragma) headers.set('Pragma', pragma);
     }
+
+    return headers;
+  }
+
+  static isVideoRequest(targetUrl) {
+    const pathname = targetUrl.pathname;
+    const search = targetUrl.search || '';
+
+    return VIDEO_REGEX.test(pathname)
+      || /\/Videos\/.*\/(master\.m3u8|main\.m3u8)/i.test(pathname)
+      || /\/Audio\/.*\/stream/i.test(pathname)
+      || /[?&](static|mediaSourceId|LiveStreamId)=/i.test(search);
+  }
+
+  static isPlaybackInfoRequest(request, targetUrl) {
+    return request.method === 'POST' && /\/PlaybackInfo$/i.test(targetUrl.pathname);
+  }
+
+  static isM3u8Response(response, targetUrl) {
+    const contentType = response.headers.get('Content-Type') || '';
+    return /mpegurl|vnd\.apple\.mpegurl/i.test(contentType) || /\.m3u8$/i.test(targetUrl.pathname);
+  }
+
+  static async rewriteM3u8Response(response, requestUrl, targetUrl) {
+    try {
+      const text = await response.text();
+
+      const proxyPrefix = `${requestUrl.origin}/`;
+      const targetOrigin = targetUrl.origin;
+      const escapedTarget = targetOrigin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      let replaced = text.replace(new RegExp(escapedTarget, 'g'), proxyPrefix + targetOrigin);
+
+      replaced = replaced.replace(/URI="(https?:\/\/[^"]+)"/g, (m, p1) => {
+        return `URI="${requestUrl.origin}/${p1}"`;
+      });
+
+      const headers = this.withCors(response.headers);
+      headers.delete('Content-Length');
+      headers.delete('Content-Encoding');
+      headers.set('Cache-Control', 'private, no-store');
+
+      return new Response(replaced, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+      });
+    } catch {
+      const headers = this.withCors(response.headers);
+      headers.set('Cache-Control', 'private, no-store');
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+      });
+    }
+  }
+
+  static async rewriteSmallTextResponse(response, proxyOrigin, targetOrigin) {
+    const contentType = response.headers.get('Content-Type') || '';
+    if (!/(json|xml|text|javascript|html)/i.test(contentType)) return response;
+
+    const contentLength = parseInt(response.headers.get('Content-Length') || '0', 10);
+    if (contentLength && contentLength > 1024 * 1024) return response;
 
     try {
       const text = await response.text();
-      
-      if (text.length > 4194304) {
-        const fallbackHeaders = new Headers(response.headers);
-        fallbackHeaders.delete('Content-Encoding'); 
-        fallbackHeaders.delete('Content-Length');
-        return new Response(text, { status: response.status, headers: fallbackHeaders });
+
+      if (text.length > 1024 * 1024) {
+        const headers = new Headers(response.headers);
+        headers.delete('Content-Encoding');
+        headers.delete('Content-Length');
+        return new Response(text, {
+          status: response.status,
+          statusText: response.statusText,
+          headers
+        });
+      }
+
+      if (!text.includes(targetOrigin)) {
+        const headers = new Headers(response.headers);
+        headers.delete('Content-Encoding');
+        headers.delete('Content-Length');
+        return new Response(text, {
+          status: response.status,
+          statusText: response.statusText,
+          headers
+        });
       }
 
       const escapedTarget = targetOrigin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escapedTarget, 'g');
-      const newText = text.replace(regex, proxyOrigin);
+      const replaced = text.replace(new RegExp(escapedTarget, 'g'), proxyOrigin);
 
-      const newHeaders = new Headers(response.headers);
-      newHeaders.delete('Content-Encoding'); 
-      newHeaders.delete('Content-Length');
+      const headers = new Headers(response.headers);
+      headers.delete('Content-Encoding');
+      headers.delete('Content-Length');
 
-      return new Response(newText, {
+      return new Response(replaced, {
         status: response.status,
         statusText: response.statusText,
-        headers: newHeaders
+        headers
       });
-    } catch (e) {
+    } catch {
       return response;
     }
+  }
+
+  static async rewritePlaybackInfo(response, proxyOrigin) {
+    try {
+      const cloned = response.clone();
+      const json = await cloned.json();
+      let modified = false;
+
+      if (Array.isArray(json?.MediaSources)) {
+        for (const source of json.MediaSources) {
+          const keys = ['DirectStreamUrl', 'TranscodingUrl'];
+          for (const key of keys) {
+            if (typeof source[key] === 'string' && /^https?:\/\//i.test(source[key])) {
+              if (!source[key].startsWith(proxyOrigin + '/')) {
+                source[key] = `${proxyOrigin}/${source[key]}`;
+                modified = true;
+              }
+            }
+          }
+        }
+      }
+
+      if (!modified) return response;
+
+      const headers = new Headers(response.headers);
+      headers.set('Content-Type', 'application/json;charset=UTF-8');
+      headers.delete('Content-Length');
+      headers.delete('Content-Encoding');
+
+      return new Response(JSON.stringify(json), {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+      });
+    } catch {
+      return response;
+    }
+  }
+
+  static async handleVideoRequest(request, url, targetUrl) {
+    const headers = this.buildUpstreamHeaders(request, targetUrl, true);
+
+    const upstreamRequest = new Request(targetUrl.toString(), {
+      method: request.method,
+      headers,
+      body: request.method === 'GET' || request.method === 'HEAD' ? null : request.body,
+      redirect: 'manual'
+    });
+
+    let response = await this.fetchWithTimeout(upstreamRequest, {
+      cf: {
+        cacheTtl: 0,
+        cacheEverything: false
+      }
+    }, 30000);
+
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = response.headers.get('location');
+      if (location) {
+        try {
+          const locUrl = new URL(location, targetUrl.href);
+
+          if (locUrl.hostname !== targetUrl.hostname) {
+            const proxyReqHeaders = new Headers();
+            const range = request.headers.get('Range');
+            const accept = request.headers.get('Accept');
+            const ua = request.headers.get('User-Agent');
+
+            if (range) proxyReqHeaders.set('Range', range);
+            if (accept) proxyReqHeaders.set('Accept', accept);
+            if (ua) proxyReqHeaders.set('User-Agent', ua);
+
+            response = await this.fetchWithTimeout(locUrl.toString(), {
+              method: request.method,
+              headers: proxyReqHeaders,
+              redirect: 'follow',
+              cf: {
+                cacheTtl: 0,
+                cacheEverything: false
+              }
+            }, 30000);
+          } else {
+            const resHeaders = this.withCors(response.headers);
+            resHeaders.set('Location', `${url.origin}/${locUrl.href}`);
+            resHeaders.set('Cache-Control', 'private, no-store');
+            return new Response(null, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: resHeaders
+            });
+          }
+        } catch {}
+      }
+    }
+
+    if (this.isM3u8Response(response, targetUrl)) {
+      return await this.rewriteM3u8Response(response, url, targetUrl);
+    }
+
+    const resHeaders = this.withCors(response.headers);
+    resHeaders.set('Cache-Control', 'private, no-store');
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: resHeaders
+    });
+  }
+
+  static async handleStaticRequest(request, targetUrl, ctx) {
+    const headers = this.buildUpstreamHeaders(request, targetUrl, false);
+
+    const upstreamRequest = new Request(targetUrl.toString(), {
+      method: 'GET',
+      headers,
+      redirect: 'manual'
+    });
+
+    const cache = caches.default;
+    const cacheKey = new Request(upstreamRequest.url, { method: 'GET' });
+
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+
+    const response = await this.fetchWithTimeout(upstreamRequest, {
+      cf: {
+        cacheTtl: 0,
+        cacheEverything: false
+      }
+    }, 10000);
+
+    const resHeaders = this.withCors(response.headers);
+    resHeaders.set('Vary', 'Accept-Encoding');
+
+    if (response.status === 200) {
+      const isVersioned = /[?&](v|version|tag)=/i.test(targetUrl.search);
+      resHeaders.set('Cache-Control', isVersioned
+        ? 'public, max-age=31536000, immutable'
+        : 'public, max-age=86400'
+      );
+      resHeaders.delete('Pragma');
+      resHeaders.delete('Expires');
+
+      const toCache = new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: resHeaders
+      });
+
+      ctx.waitUntil(cache.put(cacheKey, toCache.clone()));
+      return toCache;
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: resHeaders
+    });
+  }
+
+  static async handleGeneralRequest(request, url, targetUrl, ctx) {
+    const headers = this.buildUpstreamHeaders(request, targetUrl, false);
+
+    const upstreamRequest = new Request(targetUrl.toString(), {
+      method: request.method,
+      headers,
+      body: request.method === 'GET' || request.method === 'HEAD' ? null : request.body,
+      redirect: 'manual'
+    });
+
+    const isGetReq = request.method === 'GET';
+    const shouldShortCache = isGetReq && API_CACHE_REGEX.test(targetUrl.pathname);
+
+    const cache = caches.default;
+    const cacheKey = shouldShortCache ? new Request(upstreamRequest.url, { method: 'GET' }) : null;
+
+    if (shouldShortCache) {
+      const cached = await cache.match(cacheKey);
+      if (cached) return cached;
+    }
+
+    let response = await this.fetchWithTimeout(upstreamRequest, {
+      cf: {
+        cacheTtl: 0,
+        cacheEverything: false
+      }
+    }, 10000);
+
+    let resHeaders = this.withCors(response.headers);
+
+    if ([301, 302, 303, 307, 308].includes(response.status)) {
+      const location = resHeaders.get('location');
+      if (location) {
+        try {
+          const locUrl = new URL(location, targetUrl.href);
+          if (locUrl.hostname === targetUrl.hostname) {
+            resHeaders.set('Location', `${url.origin}/${locUrl.href}`);
+          }
+        } catch {}
+      }
+
+      return new Response(null, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: resHeaders
+      });
+    }
+
+    if (this.isPlaybackInfoRequest(request, targetUrl) && response.status === 200) {
+      response = await this.rewritePlaybackInfo(response, url.origin);
+      resHeaders = this.withCors(response.headers);
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: resHeaders
+      });
+    }
+
+    if (isGetReq && response.status === 200) {
+      const contentType = response.headers.get('Content-Type') || '';
+      if (/(json|xml|text|javascript|html)/i.test(contentType)) {
+        response = await this.rewriteSmallTextResponse(response, url.origin, targetUrl.origin);
+        resHeaders = this.withCors(response.headers);
+      }
+    }
+
+    if (shouldShortCache && response.status === 200) {
+      resHeaders.set('Cache-Control', 'public, max-age=15');
+      const toCache = new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: resHeaders
+      });
+      ctx.waitUntil(cache.put(cacheKey, toCache.clone()));
+      return toCache;
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: resHeaders
+    });
   }
 
   static async handle(request, env, ctx, config, adminRoute) {
     const url = new URL(request.url);
     const clientIP = request.headers.get('CF-Connecting-IP') || 'Unknown';
 
-    // 🛡️ 核心拦截结界：坏蛋路径秒级抹杀！绝对不让奇怪的扫描进来哦！(▼へ▼メ)
     if (config.block_sensitive_paths && SENSITIVE_PATH_REGEX.test(url.pathname)) {
       return new Response('404 Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
     }
 
     let targetUrl = this.parseTarget(url.pathname.slice(1) + url.search, url, config);
+
     if (!targetUrl) {
       const referer = request.headers.get('Referer');
       if (referer) {
@@ -268,7 +674,6 @@ class ProxyEngine {
       }
     }
 
-    // 🌐 幻象伪装引擎：悄悄接管前台，给坏人看假动作，保护底层小秘密~ (✿◡‿◡)
     if (!targetUrl) {
       const stats = await StatsManager.fetchTodayUsage(config.cf_account_id, config.cf_api_token);
       const currentStats = stats !== null ? stats : -1;
@@ -280,158 +685,45 @@ class ProxyEngine {
     if (!authResult.allowed) return new Response(authResult.msg, { status: 403 });
 
     if (request.headers.get('Upgrade') === 'websocket') {
-      const wsTargetUrl = `${targetUrl.protocol === 'https:' ? 'wss:' : 'ws:'}//${targetUrl.host}${targetUrl.pathname}${targetUrl.search}`;
-      const [client, server] = Object.values(new WebSocketPair());
-      try {
-        const targetSocket = new WebSocket(wsTargetUrl);
-        targetSocket.accept();
-        targetSocket.addEventListener('message', e => server.send(e.data));
-        server.addEventListener('message', e => targetSocket.send(e.data));
-        targetSocket.addEventListener('close', e => server.close(e.code, e.reason));
-        server.addEventListener('close', e => targetSocket.close(e.code, e.reason));
-        targetSocket.addEventListener('error', e => server.close(1011, e.message));
-        server.addEventListener('error', e => targetSocket.close(1011, e.message));
-      } catch (e) {
-        return new Response(null, { status: 500 });
-      }
-      return new Response(null, { status: 101, webSocket: client });
-    }
-
-    const newHeaders = new Headers(request.headers);
-    newHeaders.set('Host', targetUrl.host);
-    newHeaders.set('Origin', targetUrl.origin);
-    newHeaders.set('Referer', targetUrl.href);
-    newHeaders.set('X-Forwarded-For', clientIP);
-    newHeaders.delete('cf-connecting-ip');
-
-    const newRequest = new Request(targetUrl.toString(), {
-      method: request.method,
-      headers: newHeaders,
-      body: request.body,
-      redirect: 'manual'
-    });
-
-    const isImage = STATIC_REGEX.test(targetUrl.pathname);
-    const isApiCacheable = API_CACHE_REGEX.test(targetUrl.pathname);
-    const isVideo = VIDEO_REGEX.test(targetUrl.pathname);
-    const isGetReq = request.method === 'GET';
-
-    const cache = caches.default;
-    if ((isImage || isApiCacheable) && isGetReq) {
-      const cachedResponse = await cache.match(newRequest);
-      if (cachedResponse) return cachedResponse;
+      return fetch(new Request(targetUrl.toString(), request));
     }
 
     try {
-      let response = await fetch(newRequest);
-      let resHeaders = new Headers(response.headers);
-      resHeaders.set('Access-Control-Allow-Origin', '*');
-      resHeaders.set('Access-Control-Expose-Headers', '*');
-
-      if ([301, 302, 303, 307, 308].includes(response.status)) {
-        const location = resHeaders.get('location');
-        if (location) {
-          try {
-            const locUrl = new URL(location, targetUrl.href);
-            if (isVideo && locUrl.hostname !== targetUrl.hostname) {
-              const proxyReqHeaders = new Headers();
-              if (request.headers.has('Range')) proxyReqHeaders.set('Range', request.headers.get('Range'));
-              if (request.headers.has('Accept')) proxyReqHeaders.set('Accept', request.headers.get('Accept'));
-              proxyReqHeaders.set('User-Agent', request.headers.get('User-Agent') || 'Mozilla/5.0');
-              const externalResponse = await fetch(locUrl.toString(), {
-                method: request.method,
-                headers: proxyReqHeaders,
-                redirect: 'follow',
-                cf: { cacheTtl: 0, cacheEverything: false }
-              });
-              const finalHeaders = new Headers(externalResponse.headers);
-              finalHeaders.set('Access-Control-Allow-Origin', '*');
-              finalHeaders.set('Access-Control-Expose-Headers', '*');
-              return new Response(externalResponse.body, { status: externalResponse.status, headers: finalHeaders });
-            }
-            if (locUrl.hostname === targetUrl.hostname) {
-              resHeaders.set('Location', url.origin + '/' + locUrl.href);
-            }
-          } catch (e) {}
-        }
+      if (this.isVideoRequest(targetUrl)) {
+        return await this.handleVideoRequest(request, url, targetUrl);
       }
 
-      if (request.method === 'POST' && targetUrl.pathname.includes('/PlaybackInfo') && response.status === 200) {
-        try {
-          const clone = response.clone();
-          const json = await clone.json();
-          let modified = false;
-          if (json.MediaSources && Array.isArray(json.MediaSources)) {
-            for (let source of json.MediaSources) {
-              if (source.DirectStreamUrl && source.DirectStreamUrl.match(/^https?:\/\//)) {
-                if (!source.DirectStreamUrl.startsWith(url.origin)) {
-                    source.DirectStreamUrl = `${url.origin}/${source.DirectStreamUrl}`;
-                }
-                modified = true;
-              }
-              if (source.TranscodingUrl && source.TranscodingUrl.match(/^https?:\/\//)) {
-                if (!source.TranscodingUrl.startsWith(url.origin)) {
-                    source.TranscodingUrl = `${url.origin}/${source.TranscodingUrl}`;
-                }
-                modified = true;
-              }
-            }
-          }
-          if (modified) {
-            resHeaders.delete('Content-Length'); 
-            resHeaders.set('Content-Type', 'application/json');
-            return new Response(JSON.stringify(json), { status: 200, headers: resHeaders });
-          }
-        } catch(e) {}
+      if (request.method === 'GET' && STATIC_REGEX.test(targetUrl.pathname)) {
+        return await this.handleStaticRequest(request, targetUrl, ctx);
       }
 
-      const proxyOrigin = url.origin;
-      const targetOrigin = targetUrl.origin;
-      if (response.status === 200 && isGetReq && !isVideo && !isImage) {
-        response = await this.rewriteResponseBody(response, proxyOrigin, targetOrigin);
-        resHeaders = new Headers(response.headers);
-        resHeaders.set('Access-Control-Allow-Origin', '*');
-        resHeaders.set('Access-Control-Expose-Headers', '*');
-      }
-
-      if (response.status === 200 && isGetReq) {
-        if (isImage) {
-          resHeaders.set('Cache-Control', targetUrl.search.toLowerCase().includes('tag=') ? 'public, max-age=31536000, immutable' : 'public, max-age=7200');
-          resHeaders.delete('Pragma');
-          resHeaders.delete('Expires');
-          const responseToCache = new Response(response.body, { status: response.status, headers: resHeaders });
-          ctx.waitUntil(cache.put(newRequest, responseToCache.clone()));
-          return responseToCache;
-        } else if (isApiCacheable) {
-          resHeaders.set('Cache-Control', 'public, max-age=10');
-          const responseToCache = new Response(response.body, { status: response.status, headers: resHeaders });
-          ctx.waitUntil(cache.put(newRequest, responseToCache.clone()));
-          return responseToCache;
-        }
-      }
-
-      return new Response(response.body, { status: response.status, statusText: response.statusText, headers: resHeaders });
+      return await this.handleGeneralRequest(request, url, targetUrl, ctx);
     } catch (e) {
-      return new Response(JSON.stringify({ error: `Proxy Error: ${e.message}` }), {
+      return new Response(JSON.stringify({
+        code: 502,
+        msg: '服务暂时不可用，请稍后重试'
+      }), {
         status: 502,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+        headers: {
+          'Content-Type': 'application/json;charset=UTF-8',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     }
   }
 }
 
 // ==========================================
-// 🚪 终极魔法阵 7：边缘节点调度大门 (Main Entry) 欢迎光临~
+// 🚪 终极魔法阵 7：边缘节点调度大门 (Main Entry)
 // ==========================================
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    
+
     if (url.pathname === '/favicon.ico' || url.pathname === '/apple-touch-icon.png') {
       return new Response(null, { status: 204 });
     }
 
-    // 哒咩！绝对不可以偷用自带的 workers 域名哦，要用专属的自定义域名才行！(乂'ω')
     if (url.hostname.endsWith('.workers.dev') || url.hostname.endsWith('.pages.dev')) {
       return new Response('Access Denied: Please use a custom domain.', { status: 403 });
     }
@@ -451,7 +743,6 @@ export default {
     let rawAdmin = env.admin || '/emby-admin';
     if (!rawAdmin.startsWith('/')) rawAdmin = '/' + rawAdmin;
 
-    // 乖乖站好排队~ 这里是路由分发小助手，管理去左边，业务去右边 (´▽`ʃ♡ƪ)
     if (url.pathname.startsWith(rawAdmin)) {
       return AdminController.handle(request, env, url, rawAdmin);
     } else {
@@ -460,7 +751,6 @@ export default {
     }
   },
 
-  // ⏰ 滴答滴答~ 自动化计划任务小闹钟响啦 (Cron Task Engine) ヾ(≧▽≦*)o
   async scheduled(controller, env, ctx) {
     const config = await ConfigManager.get(env);
     if (config.cf_account_id && config.cf_api_token) {
